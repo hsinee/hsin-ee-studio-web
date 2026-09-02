@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSIN.EE 工作室後台管理系統｜為美容美甲工作室打造的智慧後台</title>
+<meta name="description" content="HSIN.EE 是專為美容、美甲、美睫、紋繡、SPA按摩等工作室設計的後台管理系統，整合預約提醒、顧客資料、金流訂單與品牌客製化，讓經營更輕鬆。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a href="#top" class="logo">HSIN<span>.EE</span></a>
+    <nav class="main-nav" id="mainNav">
+      <a href="#features">功能介紹</a>
+      <a href="#audience">適合對象</a>
+      <a href="#why">為什麼選擇我們</a>
+      <a href="#contact" class="nav-cta">預約展示</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="開啟選單" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">工作室專屬後台系統</p>
+        <h1>把瑣事交給系統，<br>把時間留給客人。</h1>
+        <p class="hero-sub">HSIN.EE 是為美容、美甲、美睫、紋繡、SPA 按摩等工作室打造的一站式後台管理系統，從預約提醒、顧客資料到金流報表，通通整合在一起，還能換上您自己的品牌風格。</p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn-primary">立即預約展示</a>
+          <a href="#features" class="btn btn-ghost">看看有哪些功能</a>
+        </div>
+        <ul class="hero-trust">
+          <li>多裝置同步</li>
+          <li>品牌色 / LOGO 客製化</li>
+          <li>資料自動備份</li>
+        </ul>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="mock-dashboard">
+          <div class="mock-topbar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="mock-body">
+            <div class="mock-sidebar">
+              <div class="mock-brand"></div>
+              <div class="mock-nav-item active"></div>
+              <div class="mock-nav-item"></div>
+              <div class="mock-nav-item"></div>
+              <div class="mock-nav-item"></div>
+            </div>
+            <div class="mock-main">
+              <div class="mock-cards">
+                <div class="mock-card"></div>
+                <div class="mock-card"></div>
+                <div class="mock-card"></div>
+              </div>
+              <div class="mock-chart">
+                <div class="bar" style="--h:40%"></div>
+                <div class="bar" style="--h:65%"></div>
+                <div class="bar" style="--h:50%"></div>
+                <div class="bar" style="--h:80%"></div>
+                <div class="bar" style="--h:60%"></div>
+                <div class="bar" style="--h:90%"></div>
+                <div class="bar" style="--h:70%"></div>
+              </div>
+              <div class="mock-list">
+                <div class="mock-row"></div>
+                <div class="mock-row"></div>
+                <div class="mock-row"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAIN POINTS -->
+  <section class="pain">
+    <div class="container">
+      <h2 class="section-title center">工作室老闆的日常，是不是也遇過這些困擾？</h2>
+      <div class="pain-grid">
+        <div class="pain-item">
+          <span class="pain-icon">📒</span>
+          <p>顧客資料散落在紙本、LINE 對話、Excel 表格，回訪時間全靠記憶和運氣</p>
+        </div>
+        <div class="pain-item">
+          <span class="pain-icon">🎨</span>
+          <p>系統介面千篇一律，放不進自己的品牌 LOGO 和配色，客人看不出這是您的品牌</p>
+        </div>
+        <div class="pain-item">
+          <span class="pain-icon">🧾</span>
+          <p>每月要另外開 Excel 計算營收、支出、進貨成本，對帳花掉一整晚</p>
+        </div>
+        <div class="pain-item">
+          <span class="pain-icon">📱</span>
+          <p>電腦、手機、平板都得查資料，卻常常各裝置版本不同步、對不起來</p>
+        </div>
+        <div class="pain-item">
+          <span class="pain-icon">💾</span>
+          <p>資料只存在一台電腦裡，萬一硬碟壞掉或誤刪，多年累積的顧客資料瞬間消失</p>
+        </div>
+        <div class="pain-item">
+          <span class="pain-icon">📊</span>
+          <p>想知道這個月到底有沒有賺錢、哪個服務項目最熱門，卻沒有一張總覽報表可以看</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <p class="eyebrow center">核心功能</p>
+      <h2 class="section-title center">一套系統，管好工作室的每一件事</h2>
+      <p class="section-sub center">從顧客關係到金流報表，HSIN.EE 把工作室經營需要的功能整合在同一個地方。</p>
+
+      <div class="feature-grid">
+
+        <div class="feature-card">
+          <div class="feature-icon">🔔</div>
+          <h3>顧客回訪提醒</h3>
+          <p>系統自動追蹤顧客上次到店時間，主動提醒該回訪或該保養的客人，降低顧客流失、提升回客率。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🖼️</div>
+          <h3>品牌 LOGO 客製化</h3>
+          <p>上傳自己的工作室 LOGO，讓後台系統從登入畫面到報表，都是專屬於您品牌的樣貌。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3>品牌色客製化</h3>
+          <p>依照自己品牌的主色調整整個系統配色，不再套用制式模板，員工與客人都能感受到一致的品牌形象。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <h3>客戶資料管理</h3>
+          <p>集中管理顧客基本資料、服務紀錄、偏好與備註，接待每一位客人都能像老朋友一樣熟悉她的需求。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💳</div>
+          <h3>金流 / 訂單管理</h3>
+          <p>從下單、收款到訂單狀態一目了然，堂內消費、預購課程、儲值方案都能清楚追蹤，帳目更透明。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3>支出管理</h3>
+          <p>記錄進貨、耗材、房租等各項支出，收支自動彙整，不用再另外開表格對帳。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3>營運總攬報表</h3>
+          <p>營收、支出、熱門服務、顧客成長趨勢一頁看懂，經營狀況不再只能憑感覺判斷。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">☁️</div>
+          <h3>檔案自動備份</h3>
+          <p>資料定期自動備份，不必擔心裝置損壞、誤刪或遺失，多年累積的顧客資產都受到保護。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📲</div>
+          <h3>跨裝置支援</h3>
+          <p>電腦、手機、平板都能登入使用，資料即時同步，櫃檯、店內、外出都能隨時查詢與更新。</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- AUDIENCE -->
+  <section class="audience" id="audience">
+    <div class="container">
+      <p class="eyebrow center">適合誰使用</p>
+      <h2 class="section-title center">專為「靠雙手服務客人」的工作室設計</h2>
+      <p class="section-sub center">不管是一人工作室還是多位美容師的團隊，只要您需要管理顧客與預約，HSIN.EE 都能派上用場。</p>
+
+      <div class="audience-grid">
+        <div class="audience-card">
+          <div class="audience-icon">💅</div>
+          <h3>美甲 / 美睫工作室</h3>
+          <p>管理每位顧客的款式紀錄、回補周期與消費紀錄，安排下一次預約更省心。</p>
+        </div>
+        <div class="audience-card">
+          <div class="audience-icon">✨</div>
+          <h3>美容 / SPA 按摩館</h3>
+          <p>追蹤療程進度與回訪提醒，讓保養療程與紓壓按摩的客人定期回流。</p>
+        </div>
+        <div class="audience-card">
+          <div class="audience-icon">🪶</div>
+          <h3>紋繡 / 半永久工作室</h3>
+          <p>紀錄每位客人的施作細節與補色時程，專業與細緻都留在系統裡。</p>
+        </div>
+        <div class="audience-card">
+          <div class="audience-icon">🕯️</div>
+          <h3>除毛 / 光療工作室</h3>
+          <p>掌握療程堂數與消費紀錄，方案進度、金流狀況一次看清楚。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section class="why" id="why">
+    <div class="container why-inner">
+      <div class="why-copy">
+        <p class="eyebrow">為什麼選擇 HSIN.EE</p>
+        <h2 class="section-title">因為工作室的時間，該花在客人身上</h2>
+        <div class="why-list">
+          <div class="why-item">
+            <h4>不只是系統，更是您的品牌</h4>
+            <p>LOGO 與品牌色都能客製化，後台不再像租來的，而是真正屬於您的工作室。</p>
+          </div>
+          <div class="why-item">
+            <h4>經營狀況不用再猜</h4>
+            <p>營運總攬報表把營收、支出、顧客動態整理成一目了然的畫面，決策更有依據。</p>
+          </div>
+          <div class="why-item">
+            <h4>資料安全，安心無後顧之憂</h4>
+            <p>自動備份機制守護多年累積的顧客資產，不怕裝置損壞或誤刪。</p>
+          </div>
+          <div class="why-item">
+            <h4>隨時隨地都能用</h4>
+            <p>電腦、手機、平板全支援，櫃檯忙碌時、外出採買時都能查詢與更新資料。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT / CTA -->
+  <section class="contact" id="contact">
+    <div class="container contact-inner">
+      <h2 class="section-title center">準備好讓工作室經營更輕鬆了嗎？</h2>
+      <p class="section-sub center">留下聯絡方式，我們會安排系統展示，帶您實際看看 HSIN.EE 如何運作。</p>
+
+      <form class="contact-form" id="contactForm">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="name">您的稱呼</label>
+            <input type="text" id="name" name="name" placeholder="王小姐" required>
+          </div>
+          <div class="form-field">
+            <label for="studio">工作室名稱</label>
+            <input type="text" id="studio" name="studio" placeholder="例：某某美甲工作室">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="phone">聯絡電話 / LINE ID</label>
+            <input type="text" id="phone" name="phone" placeholder="方便聯絡您的方式" required>
+          </div>
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="message">想了解的內容</label>
+          <textarea id="message" name="message" rows="3" placeholder="例如：想了解價格方案、想看實際操作畫面…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">送出預約需求</button>
+        <p class="form-note" id="formNote"></p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">HSIN<span>.EE</span></div>
+    <p>© <span id="year"></span> HSIN.EE 工作室後台管理系統．為工作室而生。</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
