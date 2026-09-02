@@ -12,7 +12,7 @@ HSIN.EE 工作室後台管理系統 - 線上部署版本
 ```
 index.html      主頁面
 css/style.css   樣式
-js/main.js      互動效果（選單、表單、滾動動畫）
+js/main.js      互動效果（手機版選單開關）
 ```
 
 ### 本機預覽
@@ -25,7 +25,7 @@ python3 -m http.server 8000
 
 然後開啟 http://localhost:8000
 
-### 待補充
+### 聯絡方式
 
-- 聯絡表單目前為前端展示用，尚未串接實際送出（Email / API），上線前需要串接後端或第三方表單服務。
+頁面上的「加入官方 LINE 立即預約」按鈕會直接開啟官方 LINE（`https://lin.ee/rnvEEY1`），若 LINE 網址有變更，記得同步更新 `index.html` 中的連結。
 
