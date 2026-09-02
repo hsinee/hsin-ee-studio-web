@@ -457,16 +457,55 @@ section { padding: 96px 0; }
   margin: 48px auto 0;
   display: flex;
   flex-direction: column;
-  gap: 30px;
 }
 
-.faq-item h3 {
+.faq-item {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--color-line);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.faq-item:first-child { padding-top: 0; }
+.faq-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.faq-q,
+.faq-a {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.faq-badge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  background: var(--color-primary);
+  color: #fff;
+}
+.faq-badge.faq-badge-a {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.faq-q h3 {
   font-size: 1.08rem;
   font-weight: 700;
-  margin-bottom: 8px;
   color: var(--color-ink);
+  padding-top: 3px;
 }
-.faq-item p { color: var(--color-ink-soft); font-size: 0.95rem; }
+.faq-a p {
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  padding-top: 3px;
+}
 
 /* ---------- Contact ---------- */
 .contact { background: var(--color-surface); }
