@@ -302,4 +302,3 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .mode-hint { margin: 0 0 10px; }
 .slot-close { margin-top: 14px; padding: 14px; background: var(--paper); border-radius: 8px; max-width: 420px; }
 .field-label-row { font-size: 13px; color: var(--brown); font-weight: 600; margin-bottom: 10px; }
-.cal-day.partial:not(.selected) { box-shadow: inset 0 0 0 1px var(--rose); }
