@@ -1,34 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSettings } from './settings.js';
+import { fmtDate, todayStr, addDays, isClosedDay } from './dates.js';
+import Calendar from './Calendar.jsx';
 
 /* ============================================================
    小工具
    ============================================================ */
 
-const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
-
 function fmtMoney(n) {
   return 'NT$ ' + Number(n || 0).toLocaleString('zh-TW');
-}
-
-function toDateStr(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function fmtDate(str) {
-  if (!str) return '';
-  const [y, m, d] = str.split('-').map(Number);
-  const w = new Date(y, m - 1, d).getDay();
-  return `${m}/${d}（${WEEKDAYS[w]}）`;
-}
-
-function tomorrowStr() {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return toDateStr(d);
 }
 
 function normalizePhone(raw) {
@@ -84,9 +64,9 @@ function windowText(days) {
 function tierOptions(pricing) {
   const w = windowText(pricing.revisitWindowDays);
   return [
-    { id: 'trial', label: '第一次預約', desc: pricing.labels.trial },
-    { id: 'revisit', label: `${w}內曾到店`, desc: pricing.labels.revisit },
-    { id: 'normal', label: `超過 ${w}未到店`, desc: pricing.labels.normal },
+    { id: 'trial', label: '第一次預約' },
+    { id: 'revisit', label: `${w}內曾到店` },
+    { id: 'normal', label: `超過 ${w}未到店` },
   ];
 }
 
@@ -320,7 +300,6 @@ function InfoStep({ name, setName, phone, setPhone, tier, setTier, onBack, onNex
           {tierOptions(pricing).map((o) => (
             <button key={o.id} type="button" className={'tier-option' + (tier === o.id ? ' active' : '')} onClick={() => setTier(o.id)}>
               <span className="tier-option-label">{o.label}</span>
-              <span className="tier-option-desc">{o.desc}</span>
             </button>
           ))}
         </div>
@@ -407,17 +386,34 @@ function ItemsStep({ tier, selected, toggle, total, onBack, onNext }) {
    ============================================================ */
 
 function TimeStep({ date, setDate, time, setTime, onBack, onNext }) {
-  const { timeSlots: TIME_SLOTS } = useSettings();
+  const settings = useSettings();
+  const { timeSlots: TIME_SLOTS, bookingWindowDays } = settings;
+  const minDate = addDays(todayStr(), 1);
+  const maxDate = addDays(todayStr(), bookingWindowDays);
+
+  const dayState = (d) => {
+    const closed = isClosedDay(d, settings);
+    return { closed, selected: d === date, disabled: closed || d < minDate || d > maxDate };
+  };
+
+  // 之前選的日期後來變成公休或超出範圍時，清掉重選
+  const dateOk = date && !dayState(date).disabled;
+
   return (
     <section className="card">
       <h2 className="card-title serif">預約時間</h2>
 
       <div className="field">
-        <label htmlFor="date">預約日期</label>
-        <input id="date" type="date" min={tomorrowStr()} value={date} onChange={(e) => setDate(e.target.value)} />
+        <label>預約日期{dateOk && <span className="picked-date">{fmtDate(date)}</span>}</label>
+        <Calendar initial={dateOk ? date : minDate} minDate={minDate} maxDate={maxDate} dayState={dayState} onPick={setDate} />
+        <div className="cal-legend">
+          <span><i style={{ background: 'var(--rose-deep)' }} />已選擇</span>
+          <span><i style={{ background: 'var(--rose-soft)' }} />公休</span>
+          <span>灰色日期無法預約</span>
+        </div>
       </div>
 
-      {date && (
+      {dateOk && (
         <div className="field">
           <label>希望時段</label>
           <div className="slot-grid">
@@ -433,7 +429,7 @@ function TimeStep({ date, setDate, time, setTime, onBack, onNext }) {
 
       <div className="actions">
         <button className="btn-secondary" onClick={onBack}>返回</button>
-        <button className="btn-primary grow" disabled={!date || !time} onClick={onNext}>下一步：確認預約</button>
+        <button className="btn-primary grow" disabled={!dateOk || !time} onClick={onNext}>下一步：確認預約</button>
       </div>
     </section>
   );

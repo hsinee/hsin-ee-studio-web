@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { loadSettings, saveSettings } from './settings.js';
+import { WEEKDAYS, fmtDate, todayStr, weekdayOf } from './dates.js';
+import Calendar from './Calendar.jsx';
 
 const SECTIONS = [
   { id: 'store', label: '店家資訊' },
@@ -7,7 +9,7 @@ const SECTIONS = [
   { id: 'services', label: '項目與價格' },
   { id: 'pricing', label: '價格規則' },
   { id: 'deposit', label: '訂金與 LINE' },
-  { id: 'slots', label: '預約時段' },
+  { id: 'slots', label: '時段與公休' },
 ];
 
 function uid() {
@@ -29,6 +31,9 @@ function normalize(s) {
     notices: s.notices.map((n) => n.trim()).filter(Boolean),
     store: { ...s.store, intro: s.store.intro.map((p) => p.trim()).filter(Boolean) },
     timeSlots: [...s.timeSlots].sort(),
+    closedDates: [...new Set(s.closedDates)].filter((d) => d >= todayStr()).sort(),
+    closedWeekdays: [...s.closedWeekdays].sort(),
+    bookingWindowDays: toNum(s.bookingWindowDays) || 60,
     services: s.services.map((it) => {
       const base = { id: it.id, category: it.category, name: it.name.trim(), active: it.active !== false };
       if (it.note && it.note.trim()) base.note = it.note.trim();
@@ -49,6 +54,7 @@ function validate(s) {
   if (!s.line.id.trim()) return '請填寫官方 LINE ID';
   if (s.services.some((it) => !it.name.trim())) return '有項目沒有填名稱（在「項目與價格」）';
   if (!s.timeSlots.length) return '至少要有一個預約時段';
+  if (s.closedWeekdays.length >= 7) return '每週公休不能七天全選';
   return '';
 }
 
@@ -430,25 +436,81 @@ function DepositSection({ draft, update }) {
 function SlotsSection({ draft, update }) {
   const [newSlot, setNewSlot] = useState('');
   const slots = [...draft.timeSlots].sort();
+  const today = todayStr();
+  const upcoming = draft.closedDates.filter((d) => d >= today).sort();
+
   const add = () => {
     if (!newSlot || draft.timeSlots.includes(newSlot)) return;
     update((d) => ({ ...d, timeSlots: [...d.timeSlots, newSlot] }));
     setNewSlot('');
   };
+  const toggleWeekday = (w) =>
+    update((d) => ({
+      ...d,
+      closedWeekdays: d.closedWeekdays.includes(w) ? d.closedWeekdays.filter((x) => x !== w) : [...d.closedWeekdays, w],
+    }));
+  const toggleDate = (date) =>
+    update((d) => ({
+      ...d,
+      closedDates: d.closedDates.includes(date) ? d.closedDates.filter((x) => x !== date) : [...d.closedDates, date],
+    }));
+
+  const dayState = (d) => {
+    const weekly = draft.closedWeekdays.includes(weekdayOf(d));
+    // 每週公休的日子在這裡不能點，要到上方取消
+    return { closed: weekly || draft.closedDates.includes(d), disabled: d < today || weekly };
+  };
+
   return (
-    <section className="card">
-      <SectionHead title="預約時段" desc="客人可選擇的希望時段，實際時間由你在 LINE 回覆確認" />
-      <div className="slot-chips">
-        {slots.map((t) => (
-          <span key={t} className="slot-chip">
-            {t}
-            <button aria-label={`刪除 ${t}`} onClick={() => update((d) => ({ ...d, timeSlots: d.timeSlots.filter((x) => x !== t) }))}>✕</button>
-          </span>
-        ))}
+    <section>
+      <div className="card">
+        <SectionHead title="公休日" desc="點選月曆上的日期設為公休（再點一次取消），客人就無法選那天" />
+        <Calendar minDate={today} dayState={dayState} onPick={toggleDate} />
+        {upcoming.length > 0 && (
+          <div className="closed-list">
+            {upcoming.map((d) => (
+              <span key={d} className="slot-chip">
+                {fmtDate(d)}
+                <button aria-label={`取消 ${d} 公休`} onClick={() => toggleDate(d)}>✕</button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <Field label="每週固定公休" hint="選到的星期每週都不開放預約">
+          <div className="weekday-picks">
+            {WEEKDAYS.map((w, i) => (
+              <button key={w} type="button" className={'pill' + (draft.closedWeekdays.includes(i) ? ' active' : '')} onClick={() => toggleWeekday(i)}>
+                週{w}
+              </button>
+            ))}
+          </div>
+        </Field>
+
+        <Field label="開放預約天數" hint="客人最多可以預約幾天後，例如 60 天">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={draft.bookingWindowDays}
+            onChange={(e) => { const v = e.target.value; update((d) => ({ ...d, bookingWindowDays: v })); }}
+          />
+        </Field>
       </div>
-      <div className="add-slot">
-        <input type="time" value={newSlot} onChange={(e) => setNewSlot(e.target.value)} />
-        <button className="btn-secondary" disabled={!newSlot} onClick={add}>＋ 新增時段</button>
+
+      <div className="card">
+        <SectionHead title="預約時段" desc="客人可選擇的希望時段，實際時間由你在 LINE 回覆確認" />
+        <div className="slot-chips">
+          {slots.map((t) => (
+            <span key={t} className="slot-chip">
+              {t}
+              <button aria-label={`刪除 ${t}`} onClick={() => update((d) => ({ ...d, timeSlots: d.timeSlots.filter((x) => x !== t) }))}>✕</button>
+            </span>
+          ))}
+        </div>
+        <div className="add-slot">
+          <input type="time" value={newSlot} onChange={(e) => setNewSlot(e.target.value)} />
+          <button className="btn-secondary" disabled={!newSlot} onClick={add}>＋ 新增時段</button>
+        </div>
       </div>
     </section>
   );
