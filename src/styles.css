@@ -105,10 +105,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .tier-options { display: flex; flex-direction: column; gap: 8px; }
 .tier-option { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--line); background: var(--white); border-radius: 8px; padding: 12px 14px; cursor: pointer; text-align: left; }
 .tier-option-label { font-size: 14px; }
-.tier-option-desc { font-size: 12px; color: var(--taupe); }
 .tier-option.active { border-color: var(--rose-deep); background: #fdf6f4; }
 .tier-option.active .tier-option-label { font-weight: 600; }
-.tier-option.active .tier-option-desc { color: var(--rose-deep); }
 
 /* ---- 選擇項目 ---- */
 .items-step { padding-bottom: 80px; }
@@ -271,3 +269,26 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   .save-bar { padding-left: 16px; padding-right: 16px; justify-content: space-between; }
 }
 .page-error { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px; text-align: center; font-size: 14px; }
+
+/* ---- 月曆 ---- */
+.picked-date { margin-left: 8px; color: var(--rose-deep); font-weight: 600; }
+.cal { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--white); max-width: 420px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 15px; font-weight: 600; }
+.cal-nav { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); font-size: 18px; line-height: 1; cursor: pointer; color: var(--brown); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-wd { text-align: center; font-size: 11px; color: var(--taupe); padding: 4px 0; }
+.cal-day { aspect-ratio: 1; border: none; border-radius: 8px; background: var(--paper); cursor: pointer; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; padding: 0; }
+.cal-day small { font-size: 9px; color: var(--alert); }
+.cal-day.today span { text-decoration: underline; text-underline-offset: 3px; }
+.cal-day.closed { background: var(--rose-soft); color: var(--taupe); }
+.cal-day.selected { background: var(--rose-deep); color: var(--white); font-weight: 600; }
+.cal-day:disabled { background: transparent; color: #c9bfb8; cursor: not-allowed; opacity: 1; }
+.cal-day.closed:disabled { background: transparent; }
+.cal-day.closed:disabled small { color: #d7b3ab; }
+.cal-legend { display: flex; gap: 14px; font-size: 11px; color: var(--taupe); margin-top: 8px; flex-wrap: wrap; }
+.cal-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+
+/* ---- 後台公休設定 ---- */
+.weekday-picks { display: flex; gap: 6px; flex-wrap: wrap; }
+.weekday-picks .pill { min-width: 44px; }
+.closed-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }

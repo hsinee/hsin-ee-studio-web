@@ -55,6 +55,13 @@ const LINE = {
 // 可預約時段
 const TIME_SLOTS = ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00', '20:30'];
 
+// 公休：指定日期（'2026-11-03'）與每週固定公休（0 = 週日、1 = 週一 …）
+const CLOSED_DATES = [];
+const CLOSED_WEEKDAYS = [];
+
+// 客人最多可以預約幾天後
+const BOOKING_WINDOW_DAYS = 60;
+
 // 一般項目填三種價格（priceFirstTrial / priceRevisit / priceNormal），加購、產品等固定價只填 price
 const CATEGORIES = [
   { id: 'small', label: '小部位' },
@@ -102,6 +109,9 @@ export const DEFAULT_SETTINGS = {
   deposit: DEPOSIT,
   line: LINE,
   timeSlots: TIME_SLOTS,
+  closedDates: CLOSED_DATES,
+  closedWeekdays: CLOSED_WEEKDAYS,
+  bookingWindowDays: BOOKING_WINDOW_DAYS,
   categories: CATEGORIES,
   services: SERVICES,
 };
