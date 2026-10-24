@@ -270,3 +270,4 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   .grid-3 .field label { font-size: 12px; }
   .save-bar { padding-left: 16px; padding-right: 16px; justify-content: space-between; }
 }
+.page-error { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px; text-align: center; font-size: 14px; }

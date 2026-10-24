@@ -4,7 +4,7 @@ import Admin from './Admin.jsx';
 import { SettingsContext, loadSettings } from './settings.js';
 
 export default function App() {
-  const isAdmin = window.location.pathname.replace(/\/+$/, '') === '/admin';
+  const isAdmin = /^\/admin(\/|$)/.test(window.location.pathname);
   return isAdmin ? <Admin /> : <PublicSite />;
 }
 
