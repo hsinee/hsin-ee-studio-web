@@ -160,10 +160,6 @@ export default function Booking() {
             setPhone={setPhone}
             tier={tier}
             setTier={setTier}
-            date={date}
-            setDate={setDate}
-            time={time}
-            setTime={setTime}
             onBack={() => setStep('welcome')}
             onNext={() => setStep('items')}
           />
@@ -176,6 +172,17 @@ export default function Booking() {
             toggle={toggle}
             total={total}
             onBack={() => setStep('info')}
+            onNext={() => setStep('time')}
+          />
+        )}
+
+        {step === 'time' && (
+          <TimeStep
+            date={date}
+            setDate={setDate}
+            time={time}
+            setTime={setTime}
+            onBack={() => setStep('items')}
             onNext={() => setStep('confirm')}
           />
         )}
@@ -185,7 +192,7 @@ export default function Booking() {
             booking={{ name, phone, date, time, tier, items, total, deposit }}
             note={note}
             setNote={setNote}
-            onBack={() => setStep('items')}
+            onBack={() => setStep('time')}
             onNext={() => setStep('done')}
           />
         )}
@@ -208,6 +215,7 @@ export default function Booking() {
 const STEPS = [
   { id: 'info', label: '基本資料' },
   { id: 'items', label: '選擇項目' },
+  { id: 'time', label: '預約時間' },
   { id: 'confirm', label: '確認預約' },
 ];
 
@@ -270,13 +278,13 @@ function Welcome({ onStart }) {
 }
 
 /* ============================================================
-   Step 1：姓名、電話、身分、日期時段
+   Step 1：姓名、電話、身分
    ============================================================ */
 
-function InfoStep({ name, setName, phone, setPhone, tier, setTier, date, setDate, time, setTime, onBack, onNext }) {
-  const { pricing, timeSlots: TIME_SLOTS } = useSettings();
+function InfoStep({ name, setName, phone, setPhone, tier, setTier, onBack, onNext }) {
+  const { pricing } = useSettings();
   const cleanPhone = normalizePhone(phone);
-  const canNext = name.trim() && isValidPhone(cleanPhone) && tier && date && time;
+  const canNext = name.trim() && isValidPhone(cleanPhone) && tier;
 
   const next = () => {
     setPhone(cleanPhone);
@@ -318,25 +326,6 @@ function InfoStep({ name, setName, phone, setPhone, tier, setTier, date, setDate
         </div>
         <span className="field-hint">本店將依您的到店紀錄核對，如有不符將以實際身分計價</span>
       </div>
-
-      <div className="field">
-        <label htmlFor="date">預約日期</label>
-        <input id="date" type="date" min={tomorrowStr()} value={date} onChange={(e) => setDate(e.target.value)} />
-      </div>
-
-      {date && (
-        <div className="field">
-          <label>希望時段</label>
-          <div className="slot-grid">
-            {TIME_SLOTS.map((t) => (
-              <button key={t} type="button" className={'slot' + (time === t ? ' active' : '')} onClick={() => setTime(t)}>
-                {t}
-              </button>
-            ))}
-          </div>
-          <span className="field-hint">實際時段以官方 LINE 回覆確認為準</span>
-        </div>
-      )}
 
       <div className="actions">
         <button className="btn-secondary" onClick={onBack}>返回</button>
@@ -414,7 +403,44 @@ function ItemsStep({ tier, selected, toggle, total, onBack, onNext }) {
 }
 
 /* ============================================================
-   Step 3：確認預約
+   Step 3：預約日期與時段
+   ============================================================ */
+
+function TimeStep({ date, setDate, time, setTime, onBack, onNext }) {
+  const { timeSlots: TIME_SLOTS } = useSettings();
+  return (
+    <section className="card">
+      <h2 className="card-title serif">預約時間</h2>
+
+      <div className="field">
+        <label htmlFor="date">預約日期</label>
+        <input id="date" type="date" min={tomorrowStr()} value={date} onChange={(e) => setDate(e.target.value)} />
+      </div>
+
+      {date && (
+        <div className="field">
+          <label>希望時段</label>
+          <div className="slot-grid">
+            {TIME_SLOTS.map((t) => (
+              <button key={t} type="button" className={'slot' + (time === t ? ' active' : '')} onClick={() => setTime(t)}>
+                {t}
+              </button>
+            ))}
+          </div>
+          <span className="field-hint">實際時段以官方 LINE 回覆確認為準</span>
+        </div>
+      )}
+
+      <div className="actions">
+        <button className="btn-secondary" onClick={onBack}>返回</button>
+        <button className="btn-primary grow" disabled={!date || !time} onClick={onNext}>下一步：確認預約</button>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   Step 4：確認預約
    ============================================================ */
 
 function ConfirmStep({ booking, note, setNote, onBack, onNext }) {
@@ -445,7 +471,7 @@ function ConfirmStep({ booking, note, setNote, onBack, onNext }) {
       </div>
 
       <div className="actions">
-        <button className="btn-secondary" onClick={onBack}>修改項目</button>
+        <button className="btn-secondary" onClick={onBack}>修改時間</button>
         <button className="btn-primary grow" onClick={onNext}>確認，前往付訂金</button>
       </div>
       <p className="agree-text">送出預約即表示您同意本店預約須知與規範</p>

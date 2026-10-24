@@ -78,7 +78,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .actions { display: flex; gap: 10px; margin-top: 22px; }
 
 /* ---- 進度條 ---- */
-.progress { list-style: none; display: flex; justify-content: center; gap: 0; margin: 4px auto 20px; padding: 0 16px; max-width: 560px; }
+.progress { list-style: none; display: flex; justify-content: center; gap: 0; margin: 4px auto 20px; padding: 0 16px; width: 100%; max-width: 560px; }
 .progress li { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: var(--taupe); position: relative; }
 .progress li + li::before { content: ''; position: absolute; top: 12px; right: 50%; width: 100%; height: 1px; background: var(--line); z-index: 0; }
 .progress .dot { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: var(--white); display: flex; align-items: center; justify-content: center; font-size: 12px; z-index: 1; }
