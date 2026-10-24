@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { loadSettings, checkPassword, saveSettings } from './settings.js';
-
-const AUTH_KEY = 'hsin-ee-booking-admin';
+import { loadSettings, saveSettings } from './settings.js';
 
 const SECTIONS = [
   { id: 'store', label: '店家資訊' },
@@ -19,23 +17,6 @@ function uid() {
 function toNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
-}
-
-function readAuth() {
-  try {
-    return sessionStorage.getItem(AUTH_KEY) || '';
-  } catch {
-    return '';
-  }
-}
-
-function writeAuth(pw) {
-  try {
-    if (pw) sessionStorage.setItem(AUTH_KEY, pw);
-    else sessionStorage.removeItem(AUTH_KEY);
-  } catch {
-    // 無痕模式下無法記住登入，重新整理後再輸入一次密碼即可
-  }
 }
 
 // 儲存前把數字欄位轉成數字、去掉空白
@@ -72,83 +53,10 @@ function validate(s) {
 }
 
 /* ============================================================
-   後台入口：登入 → 編輯
-   ============================================================ */
-
-export default function Admin() {
-  const [password, setPassword] = useState(readAuth);
-  const [verified, setVerified] = useState(false);
-
-  useEffect(() => {
-    if (!password || verified) return;
-    checkPassword(password)
-      .then((ok) => (ok ? setVerified(true) : (setPassword(''), writeAuth(''))))
-      .catch(() => setVerified(true)); // 伺服器暫時連不上時仍可進入，儲存時會再驗證一次
-  }, [password, verified]);
-
-  const logout = () => {
-    writeAuth('');
-    setPassword('');
-    setVerified(false);
-  };
-
-  if (!password) {
-    return (
-      <Login
-        onLogin={(pw) => {
-          writeAuth(pw);
-          setPassword(pw);
-          setVerified(true);
-        }}
-      />
-    );
-  }
-  if (!verified) return <div className="admin-loading">載入中…</div>;
-  return <Editor password={password} onLogout={logout} />;
-}
-
-function Login({ onLogin }) {
-  const [pw, setPw] = useState('');
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setBusy(true);
-    try {
-      if (await checkPassword(pw)) onLogin(pw);
-      else setError('密碼不正確');
-    } catch {
-      setError('暫時無法連線，請稍後再試');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="admin-login">
-      <form className="card login-card" onSubmit={submit}>
-        <img src="/logo.png" alt="" className="login-logo" />
-        <h1 className="serif login-title">預約系統後台</h1>
-        <div className="field">
-          <label htmlFor="pw">密碼</label>
-          <input id="pw" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
-        </div>
-        {error && <p className="form-error">{error}</p>}
-        <button className="btn-primary full" disabled={!pw || busy} style={{ marginTop: 18 }}>
-          {busy ? '確認中…' : '進入'}
-        </button>
-      </form>
-    </div>
-  );
-}
-
-/* ============================================================
    編輯畫面
    ============================================================ */
 
-function Editor({ password, onLogout }) {
+export default function Admin() {
   const [draft, setDraft] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [section, setSection] = useState('store');
@@ -189,15 +97,11 @@ function Editor({ password, onLogout }) {
     setStatus('');
     try {
       const clean = normalize(draft);
-      await saveSettings(password, clean);
+      await saveSettings(clean);
       setDraft(clean);
       setDirty(false);
       setStatus('已儲存，前台已更新');
-    } catch (e) {
-      if (e.message === 'UNAUTHORIZED') {
-        onLogout();
-        return;
-      }
+    } catch {
       setStatus('儲存失敗，請稍後再試');
     } finally {
       setSaving(false);
@@ -220,7 +124,6 @@ function Editor({ password, onLogout }) {
         </ul>
         <div className="admin-side-foot">
           <a href="/" target="_blank" rel="noreferrer">查看預約頁面 ↗</a>
-          <button className="link" onClick={onLogout}>登出</button>
         </div>
       </aside>
 
@@ -244,7 +147,6 @@ function Editor({ password, onLogout }) {
 
         <div className="admin-mobile-foot">
           <a href="/" target="_blank" rel="noreferrer">查看預約頁面 ↗</a>
-          <button className="link" onClick={onLogout}>登出</button>
         </div>
       </main>
 

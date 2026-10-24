@@ -1,18 +1,9 @@
-import { timingSafeEqual } from 'node:crypto';
 import { head, put, BlobNotFoundError } from '@vercel/blob';
 
 // 店家設定存在 Vercel Blob 的這個檔案
 const PATHNAME = 'settings.json';
 const MAX_BYTES = 200 * 1024;
 const REQUIRED_KEYS = ['store', 'notices', 'pricing', 'deposit', 'line', 'timeSlots', 'categories', 'services'];
-
-function passwordOk(given) {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected || typeof given !== 'string') return false;
-  const a = Buffer.from(given);
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
 
 async function readSettings() {
   try {
@@ -38,12 +29,6 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    if (!passwordOk(req.headers['x-admin-password'])) {
-      return res.status(401).json({ error: 'UNAUTHORIZED' });
-    }
-    // 只驗證密碼（登入用）
-    if (req.query.login) return res.status(200).json({ ok: true });
-
     const body = req.body;
     if (!body || typeof body !== 'object' || !REQUIRED_KEYS.every((k) => k in body)) {
       return res.status(400).json({ error: 'INVALID_SETTINGS' });

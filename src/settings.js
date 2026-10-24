@@ -35,22 +35,11 @@ export async function loadSettings({ timeoutMs = 5000 } = {}) {
   }
 }
 
-export async function checkPassword(password) {
-  const res = await fetch('/api/settings?login=1', {
-    method: 'POST',
-    headers: { 'x-admin-password': password },
-  });
-  if (res.status === 401) return false;
-  if (!res.ok) throw new Error('SERVER_ERROR');
-  return true;
-}
-
-export async function saveSettings(password, settings) {
+export async function saveSettings(settings) {
   const res = await fetch('/api/settings', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(settings),
   });
-  if (res.status === 401) throw new Error('UNAUTHORIZED');
   if (!res.ok) throw new Error('SAVE_FAILED');
 }
