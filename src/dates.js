@@ -32,7 +32,15 @@ export function fmtDate(str) {
   return `${d.getMonth() + 1}/${d.getDate()}（${WEEKDAYS[d.getDay()]}）`;
 }
 
-// 某天是否公休（指定日期或每週固定公休）
-export function isClosedDay(str, { closedDates = [], closedWeekdays = [] }) {
-  return closedDates.includes(str) || closedWeekdays.includes(weekdayOf(str));
+// 某天已滿的時段
+export function fullSlotsOf(str, { closedSlots = {} }) {
+  return closedSlots[str] || [];
+}
+
+// 某天是否公休（指定日期、每週固定公休，或當天時段全滿）
+export function isClosedDay(str, settings) {
+  const { closedDates = [], closedWeekdays = [], timeSlots = [] } = settings;
+  if (closedDates.includes(str) || closedWeekdays.includes(weekdayOf(str))) return true;
+  const full = fullSlotsOf(str, settings);
+  return timeSlots.length > 0 && timeSlots.every((t) => full.includes(t));
 }

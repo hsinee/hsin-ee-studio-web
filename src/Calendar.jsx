@@ -5,7 +5,7 @@ function monthKey(y, m) {
   return y * 12 + m;
 }
 
-// 月曆：dayState(dateStr) 回傳 { disabled, closed, selected }
+// 月曆：dayState(dateStr) 回傳 { disabled, closed, partial, selected }
 export default function Calendar({ initial, minDate, maxDate, dayState, onPick }) {
   const start = parseDate(initial || minDate || todayStr());
   const [view, setView] = useState({ y: start.getFullYear(), m: start.getMonth() });
@@ -39,11 +39,12 @@ export default function Calendar({ initial, minDate, maxDate, dayState, onPick }
         {cells.map((d, i) => {
           if (!d) return <span key={'b' + i} />;
           const s = dayState(d);
-          const cls = ['cal-day', s.closed && 'closed', s.selected && 'selected', d === today && 'today'].filter(Boolean).join(' ');
+          const cls = ['cal-day', s.closed && 'closed', s.partial && 'partial', s.selected && 'selected', d === today && 'today'].filter(Boolean).join(' ');
           return (
             <button key={d} type="button" className={cls} disabled={s.disabled} onClick={() => onPick(d)}>
               <span>{Number(d.slice(8))}</span>
-              {s.closed && <small>休</small>}
+              {s.closed && <small>{s.closedLabel || '休'}</small>}
+              {!s.closed && s.partial && <small className="dot">●</small>}
             </button>
           );
         })}
