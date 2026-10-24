@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { STORE, NOTICES, PRICING, DEPOSIT, LINE, TIME_SLOTS, CATEGORIES, SERVICES } from './config.js';
-import { DEMO_MODE, normalizePhone, isValidPhone, checkCustomer, getTakenSlots, createBooking } from './api.js';
 
 /* ============================================================
    小工具
@@ -30,6 +29,14 @@ function tomorrowStr() {
   const d = new Date();
   d.setDate(d.getDate() + 1);
   return toDateStr(d);
+}
+
+function normalizePhone(raw) {
+  return String(raw || '').replace(/\D/g, '');
+}
+
+function isValidPhone(phone) {
+  return /^09\d{8}$/.test(phone);
 }
 
 // 依價格身分取得項目價格；固定價項目（加購 / 產品）直接回傳 price
@@ -64,10 +71,23 @@ async function copyText(text) {
   }
 }
 
+// 打開官方 LINE 聊天室，並把訊息預先填好
+function lineMessageUrl(text) {
+  return `https://line.me/R/oaMessage/${encodeURIComponent(LINE.id)}/?${encodeURIComponent(text)}`;
+}
+
+const WEEKS = PRICING.revisitWindowDays / 7;
+
+const TIER_OPTIONS = [
+  { id: 'trial', label: '第一次預約', desc: PRICING.labels.trial },
+  { id: 'revisit', label: `${WEEKS} 週內曾到店`, desc: PRICING.labels.revisit },
+  { id: 'normal', label: `超過 ${WEEKS} 週未到店`, desc: PRICING.labels.normal },
+];
+
 const TIER_HINT = {
   trial: '歡迎第一次來到芯伊，本次享首次體驗價',
-  revisit: `距上次到店 ${PRICING.revisitWindowDays / 7} 週內，本次享回訪價`,
-  normal: `距上次到店已超過 ${PRICING.revisitWindowDays / 7} 週，本次以原價計費`,
+  revisit: `距上次到店 ${WEEKS} 週內，本次享回訪價`,
+  normal: `距上次到店已超過 ${WEEKS} 週，本次以原價計費`,
 };
 
 /* ============================================================
@@ -78,12 +98,11 @@ export default function App() {
   const [step, setStep] = useState('welcome');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [tier, setTier] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [tier, setTier] = useState(null);
   const [selected, setSelected] = useState([]);
   const [note, setNote] = useState('');
-  const [code, setCode] = useState('');
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -99,13 +118,13 @@ export default function App() {
   const toggle = (id) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const bookingText = [
-    `【${STORE.name} 預約訂金確認】`,
-    `預約編號：${code}`,
+    `【${STORE.name} 預約申請】`,
     `姓名：${name}`,
     `電話：${phone}`,
     `日期時間：${fmtDate(date)} ${time}`,
-    `項目：${items.map((it) => `${it.name} ${fmtMoney(it.price)}`).join('、')}`,
     `價格方案：${tier ? PRICING.labels[tier] : ''}`,
+    `項目：`,
+    ...items.map((it) => `・${it.name} ${fmtMoney(it.price)}`),
     `預估總金額：${fmtMoney(total)}`,
     `已匯訂金：${fmtMoney(deposit)}`,
     `匯款帳號末五碼：`,
@@ -116,10 +135,8 @@ export default function App() {
 
   return (
     <div className="page">
-      {DEMO_MODE && <div className="demo-bar">展示模式：尚未連接資料庫，預約只會存在這台裝置</div>}
-
       <header className="top">
-        <img src="/logo.png" alt={STORE.name} className={'logo' + (step === 'welcome' ? '' : ' small')} onClick={() => step !== 'done' && setStep('welcome')} />
+        <img src="/logo.png" alt={STORE.name} className={'logo' + (step === 'welcome' ? '' : ' small')} onClick={() => setStep('welcome')} />
       </header>
 
       {step !== 'welcome' && step !== 'done' && <Progress step={step} />}
@@ -133,15 +150,14 @@ export default function App() {
             setName={setName}
             phone={phone}
             setPhone={setPhone}
+            tier={tier}
+            setTier={setTier}
             date={date}
             setDate={setDate}
             time={time}
             setTime={setTime}
             onBack={() => setStep('welcome')}
-            onNext={(t) => {
-              setTier(t);
-              setStep('items');
-            }}
+            onNext={() => setStep('items')}
           />
         )}
 
@@ -162,15 +178,11 @@ export default function App() {
             note={note}
             setNote={setNote}
             onBack={() => setStep('items')}
-            onEditTime={() => setStep('info')}
-            onDone={(c) => {
-              setCode(c);
-              setStep('done');
-            }}
+            onNext={() => setStep('done')}
           />
         )}
 
-        {step === 'done' && <DoneStep code={code} deposit={deposit} bookingText={bookingText} />}
+        {step === 'done' && <DoneStep deposit={deposit} bookingText={bookingText} onBack={() => setStep('confirm')} />}
       </main>
 
       <footer className="foot">
@@ -249,53 +261,21 @@ function Welcome({ onStart }) {
 }
 
 /* ============================================================
-   Step 1：姓名、電話、日期時段
+   Step 1：姓名、電話、身分、日期時段
    ============================================================ */
 
-function InfoStep({ name, setName, phone, setPhone, date, setDate, time, setTime, onBack, onNext }) {
-  const [taken, setTaken] = useState([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const [error, setError] = useState('');
+function InfoStep({ name, setName, phone, setPhone, tier, setTier, date, setDate, time, setTime, onBack, onNext }) {
   const cleanPhone = normalizePhone(phone);
+  const canNext = name.trim() && isValidPhone(cleanPhone) && tier && date && time;
 
-  useEffect(() => {
-    if (!date) return;
-    let alive = true;
-    setLoadingSlots(true);
-    getTakenSlots(date)
-      .then((list) => alive && setTaken(list))
-      .catch(() => alive && setTaken([]))
-      .finally(() => alive && setLoadingSlots(false));
-    return () => {
-      alive = false;
-    };
-  }, [date]);
-
-  useEffect(() => {
-    if (time && taken.includes(time)) setTime('');
-  }, [taken, time, setTime]);
-
-  const canNext = name.trim() && isValidPhone(cleanPhone) && date && time && !checking;
-
-  const next = async () => {
-    setError('');
-    setChecking(true);
-    try {
-      const t = await checkCustomer(cleanPhone, date);
-      setPhone(cleanPhone);
-      onNext(t);
-    } catch {
-      setError('系統忙碌中，請稍後再試，或直接透過官方 LINE 與我們聯繫');
-    } finally {
-      setChecking(false);
-    }
+  const next = () => {
+    setPhone(cleanPhone);
+    onNext();
   };
 
   return (
     <section className="card">
       <h2 className="card-title serif">基本資料</h2>
-      <p className="muted">我們會以電話號碼辨識您的預約紀錄，並自動帶入適用的優惠價格</p>
 
       <div className="field">
         <label htmlFor="name">姓名</label>
@@ -317,40 +297,40 @@ function InfoStep({ name, setName, phone, setPhone, date, setDate, time, setTime
       </div>
 
       <div className="field">
+        <label>預約身分</label>
+        <div className="tier-options">
+          {TIER_OPTIONS.map((o) => (
+            <button key={o.id} type="button" className={'tier-option' + (tier === o.id ? ' active' : '')} onClick={() => setTier(o.id)}>
+              <span className="tier-option-label">{o.label}</span>
+              <span className="tier-option-desc">{o.desc}</span>
+            </button>
+          ))}
+        </div>
+        <span className="field-hint">本店將依您的到店紀錄核對，如有不符將以實際身分計價</span>
+      </div>
+
+      <div className="field">
         <label htmlFor="date">預約日期</label>
         <input id="date" type="date" min={tomorrowStr()} value={date} onChange={(e) => setDate(e.target.value)} />
       </div>
 
       {date && (
         <div className="field">
-          <label>預約時段</label>
+          <label>希望時段</label>
           <div className="slot-grid">
-            {TIME_SLOTS.map((t) => {
-              const isTaken = taken.includes(t);
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  className={'slot' + (time === t ? ' active' : '')}
-                  disabled={isTaken || loadingSlots}
-                  onClick={() => setTime(t)}
-                >
-                  {t}
-                  {isTaken && <span className="slot-full">已額滿</span>}
-                </button>
-              );
-            })}
+            {TIME_SLOTS.map((t) => (
+              <button key={t} type="button" className={'slot' + (time === t ? ' active' : '')} onClick={() => setTime(t)}>
+                {t}
+              </button>
+            ))}
           </div>
+          <span className="field-hint">實際時段以官方 LINE 回覆確認為準</span>
         </div>
       )}
 
-      {error && <p className="form-error">{error}</p>}
-
       <div className="actions">
         <button className="btn-secondary" onClick={onBack}>返回</button>
-        <button className="btn-primary grow" disabled={!canNext} onClick={next}>
-          {checking ? '查詢中…' : '下一步：選擇項目'}
-        </button>
+        <button className="btn-primary grow" disabled={!canNext} onClick={next}>下一步：選擇項目</button>
       </div>
     </section>
   );
@@ -426,27 +406,7 @@ function ItemsStep({ tier, selected, toggle, total, onBack, onNext }) {
    Step 3：確認預約
    ============================================================ */
 
-function ConfirmStep({ booking, note, setNote, onBack, onEditTime, onDone }) {
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  const submit = async () => {
-    setError('');
-    setSubmitting(true);
-    try {
-      const code = await createBooking({ ...booking, note: note.trim() });
-      onDone(code);
-    } catch (e) {
-      setError(
-        e.message === 'SLOT_TAKEN'
-          ? '這個時段剛剛被預約走了，請重新選擇時段'
-          : '預約送出失敗，請稍後再試，或直接透過官方 LINE 與我們聯繫'
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+function ConfirmStep({ booking, note, setNote, onBack, onNext }) {
   return (
     <section className="card">
       <h2 className="card-title serif">確認預約內容</h2>
@@ -472,18 +432,9 @@ function ConfirmStep({ booking, note, setNote, onBack, onEditTime, onDone }) {
         <textarea id="note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="例如：皮膚較敏感、想詢問的問題…" />
       </div>
 
-      {error && (
-        <p className="form-error">
-          {error}
-          {error.includes('時段') && <button className="link" onClick={onEditTime}>重新選擇時段</button>}
-        </p>
-      )}
-
       <div className="actions">
-        <button className="btn-secondary" onClick={onBack} disabled={submitting}>修改項目</button>
-        <button className="btn-primary grow" onClick={submit} disabled={submitting}>
-          {submitting ? '送出中…' : '確認送出預約'}
-        </button>
+        <button className="btn-secondary" onClick={onBack}>修改項目</button>
+        <button className="btn-primary grow" onClick={onNext}>確認，前往付訂金</button>
       </div>
       <p className="agree-text">送出預約即表示您同意本店預約須知與規範</p>
     </section>
@@ -491,10 +442,10 @@ function ConfirmStep({ booking, note, setNote, onBack, onEditTime, onDone }) {
 }
 
 /* ============================================================
-   完成：匯款訂金提醒 + 複製 + 前往官方 LINE
+   完成：匯款訂金提醒 → 傳送到官方 LINE
    ============================================================ */
 
-function DoneStep({ code, deposit, bookingText }) {
+function DoneStep({ deposit, bookingText, onBack }) {
   const [copied, setCopied] = useState('');
 
   const doCopy = async (key, text) => {
@@ -506,12 +457,10 @@ function DoneStep({ code, deposit, bookingText }) {
   return (
     <div className="done">
       <section className="card center">
-        <div className="done-mark">✓</div>
-        <h2 className="card-title serif">預約已送出</h2>
-        <p className="muted">預約編號 <span className="strong code">{code}</span></p>
+        <h2 className="card-title serif">請完成訂金匯款</h2>
         <p className="deposit-alert">
-          請於 <strong>{DEPOSIT.deadlineHours} 小時內</strong> 完成訂金匯款<br />
-          逾時未匯款，預約將自動取消
+          匯款並傳送預約資訊到官方 LINE 後，<strong>預約才算成立</strong><br />
+          請於 {DEPOSIT.deadlineHours} 小時內完成
         </p>
       </section>
 
@@ -536,19 +485,22 @@ function DoneStep({ code, deposit, bookingText }) {
       <section className="card">
         <h2 className="card-title serif">匯款完成後</h2>
         <ol className="how-list">
-          <li>按下方「複製預約資訊」</li>
-          <li>前往官方 LINE（{LINE.id}）貼上傳送</li>
-          <li>補上匯款帳號末五碼，我們確認後會回覆您</li>
+          <li>按下「傳送到官方 LINE」，預約資訊會自動帶入</li>
+          <li>在最後一行補上<strong>匯款帳號末五碼</strong>後送出</li>
+          <li>我們確認後會在 LINE 回覆您，預約即完成</li>
         </ol>
 
         <pre className="booking-text">{bookingText}</pre>
 
-        <button className="btn-primary full lg" onClick={() => doCopy('booking', bookingText)}>
-          {copied === 'booking' ? '已複製 ✓' : '複製預約資訊'}
+        <a className="btn-line full lg" href={lineMessageUrl(bookingText)} target="_blank" rel="noreferrer">傳送到官方 LINE</a>
+        <button className="btn-secondary full copy-btn" onClick={() => doCopy('booking', bookingText)}>
+          {copied === 'booking' ? '已複製 ✓' : '沒有自動帶入？按這裡複製預約資訊'}
         </button>
-        <a className="btn-line full lg" href={LINE.url} target="_blank" rel="noreferrer">前往官方 LINE 傳送</a>
         {copied === 'fail' && <p className="form-error">此瀏覽器無法自動複製，請長按上方文字手動複製</p>}
+        <p className="agree-text">官方 LINE：{LINE.id}</p>
       </section>
+
+      <button className="btn-secondary full" onClick={onBack}>返回修改預約內容</button>
     </div>
   );
 }

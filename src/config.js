@@ -1,6 +1,6 @@
 /* ============================================================
    店家設定檔 —— 前台顯示的文字、價格都在這裡改
-   改完存檔、推上 GitHub，Vercel 會自動重新部署
+   在 GitHub 網頁上修改這個檔案 →「Commit changes」→ 約 1 分鐘後網站自動更新
    ============================================================ */
 
 export const STORE = {
@@ -28,9 +28,9 @@ export const NOTICES = [
   '生理期、皮膚有傷口或過敏狀況，請提前告知。',
 ];
 
-// 價格規則
+// 價格規則（客人在預約時自己選身分，你在 LINE 收到時再核對）
 export const PRICING = {
-  // 最近一次到店後幾天內回訪，享回訪價（6 週 = 42 天）
+  // 回訪價的期限：最近一次到店後幾天內（6 週 = 42 天）
   revisitWindowDays: 42,
   labels: {
     trial: '首次體驗價',
@@ -48,10 +48,9 @@ export const DEPOSIT = {
   deadlineHours: 24, // 幾小時內完成匯款
 };
 
-// 官方 LINE
+// 官方 LINE：填官方帳號 ID（含 @），客人按「傳送到官方 LINE」會直接打開聊天室並帶入預約資訊
 export const LINE = {
-  id: '@hsinee', // 官方帳號 ID
-  url: 'https://line.me/R/ti/p/@hsinee', // 加好友 / 開聊天的連結
+  id: '@hsinee',
 };
 
 // 可預約時段
