@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { useSettings } from './settings.js';
 import { fmtDate, todayStr, addDays, isClosedDay, fullSlotsOf } from './dates.js';
 import Calendar from './Calendar.jsx';
@@ -114,8 +114,9 @@ export default function Booking() {
   const [selected, setSelected] = useState([]);
   const [note, setNote] = useState('');
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 換步驟時在畫面繪製前直接回到頂端，避免先看到新內容再慢慢捲上去
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
   }, [step]);
 
   const items = useMemo(
@@ -151,7 +152,7 @@ export default function Booking() {
 
       {step !== 'welcome' && step !== 'done' && <Progress step={step} />}
 
-      <main className="container">
+      <main className="container step-in" key={step}>
         {step === 'welcome' && <Welcome onStart={() => setStep('info')} />}
 
         {step === 'info' && (
