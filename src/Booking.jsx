@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSettings } from './settings.js';
-import { fmtDate, todayStr, addDays, isClosedDay } from './dates.js';
+import { fmtDate, todayStr, addDays, isClosedDay, fullSlotsOf } from './dates.js';
 import Calendar from './Calendar.jsx';
 
 /* ============================================================
@@ -9,6 +9,27 @@ import Calendar from './Calendar.jsx';
 
 function fmtMoney(n) {
   return 'NT$ ' + Number(n || 0).toLocaleString('zh-TW');
+}
+
+// 客人的姓名電話記在他自己的手機上，下次自動帶入
+const CUSTOMER_KEY = 'hsin-ee-booking-customer';
+
+function loadCustomer() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CUSTOMER_KEY));
+    return saved && typeof saved === 'object' ? saved : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCustomer(data) {
+  try {
+    if (data) localStorage.setItem(CUSTOMER_KEY, JSON.stringify(data));
+    else localStorage.removeItem(CUSTOMER_KEY);
+  } catch {
+    // 無痕模式等情況無法記住，下次再輸入一次即可
+  }
 }
 
 function normalizePhone(raw) {
@@ -84,8 +105,9 @@ function tierHint(pricing, tier, storeName) {
 export default function Booking() {
   const { store: STORE, pricing: PRICING, deposit: DEPOSIT, services: SERVICES } = useSettings();
   const [step, setStep] = useState('welcome');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [saved] = useState(loadCustomer);
+  const [name, setName] = useState(saved.name || '');
+  const [phone, setPhone] = useState(saved.phone || '');
   const [tier, setTier] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -140,6 +162,7 @@ export default function Booking() {
             setPhone={setPhone}
             tier={tier}
             setTier={setTier}
+            remembered={Boolean(saved.name && saved.phone)}
             onBack={() => setStep('welcome')}
             onNext={() => setStep('items')}
           />
@@ -261,19 +284,34 @@ function Welcome({ onStart }) {
    Step 1：姓名、電話、身分
    ============================================================ */
 
-function InfoStep({ name, setName, phone, setPhone, tier, setTier, onBack, onNext }) {
+function InfoStep({ name, setName, phone, setPhone, tier, setTier, remembered, onBack, onNext }) {
   const { pricing } = useSettings();
+  const [showRemembered, setShowRemembered] = useState(remembered);
   const cleanPhone = normalizePhone(phone);
   const canNext = name.trim() && isValidPhone(cleanPhone) && tier;
 
   const next = () => {
     setPhone(cleanPhone);
+    saveCustomer({ name: name.trim(), phone: cleanPhone });
     onNext();
+  };
+
+  const clear = () => {
+    saveCustomer(null);
+    setName('');
+    setPhone('');
+    setShowRemembered(false);
   };
 
   return (
     <section className="card">
       <h2 className="card-title serif">基本資料</h2>
+      {showRemembered && (
+        <p className="remembered">
+          已帶入您上次的資料
+          <button type="button" className="link" onClick={clear}>不是我，清除</button>
+        </p>
+      )}
 
       <div className="field">
         <label htmlFor="name">姓名</label>
@@ -393,11 +431,16 @@ function TimeStep({ date, setDate, time, setTime, onBack, onNext }) {
 
   const dayState = (d) => {
     const closed = isClosedDay(d, settings);
-    return { closed, selected: d === date, disabled: closed || d < minDate || d > maxDate };
+    const partial = fullSlotsOf(d, settings).length > 0;
+    // 不是公休、只是時段全滿的日子顯示「滿」
+    const allFull = closed && partial && !isClosedDay(d, { ...settings, closedSlots: {} });
+    return { closed, closedLabel: allFull ? '滿' : '休', partial, selected: d === date, disabled: closed || d < minDate || d > maxDate };
   };
 
-  // 之前選的日期後來變成公休或超出範圍時，清掉重選
+  // 之前選的日期或時段後來變成公休／已滿時，要重選
   const dateOk = date && !dayState(date).disabled;
+  const full = dateOk ? fullSlotsOf(date, settings) : [];
+  const timeOk = time && !full.includes(time);
 
   return (
     <section className="card">
@@ -409,6 +452,7 @@ function TimeStep({ date, setDate, time, setTime, onBack, onNext }) {
         <div className="cal-legend">
           <span><i style={{ background: 'var(--rose-deep)' }} />已選擇</span>
           <span><i style={{ background: 'var(--rose-soft)' }} />公休</span>
+          <span><small className="dot">●</small> 部分時段已滿</span>
           <span>灰色日期無法預約</span>
         </div>
       </div>
@@ -417,11 +461,15 @@ function TimeStep({ date, setDate, time, setTime, onBack, onNext }) {
         <div className="field">
           <label>希望時段</label>
           <div className="slot-grid">
-            {TIME_SLOTS.map((t) => (
-              <button key={t} type="button" className={'slot' + (time === t ? ' active' : '')} onClick={() => setTime(t)}>
-                {t}
-              </button>
-            ))}
+            {TIME_SLOTS.map((t) => {
+              const isFull = full.includes(t);
+              return (
+                <button key={t} type="button" className={'slot' + (time === t && !isFull ? ' active' : '')} disabled={isFull} onClick={() => setTime(t)}>
+                  {t}
+                  {isFull && <span className="slot-full">已滿</span>}
+                </button>
+              );
+            })}
           </div>
           <span className="field-hint">實際時段以官方 LINE 回覆確認為準</span>
         </div>
@@ -429,7 +477,7 @@ function TimeStep({ date, setDate, time, setTime, onBack, onNext }) {
 
       <div className="actions">
         <button className="btn-secondary" onClick={onBack}>返回</button>
-        <button className="btn-primary grow" disabled={!dateOk || !time} onClick={onNext}>下一步：確認預約</button>
+        <button className="btn-primary grow" disabled={!dateOk || !timeOk} onClick={onNext}>下一步：確認預約</button>
       </div>
     </section>
   );

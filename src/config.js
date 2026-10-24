@@ -59,6 +59,9 @@ const TIME_SLOTS = ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00
 const CLOSED_DATES = [];
 const CLOSED_WEEKDAYS = [];
 
+// 某天部分時段已滿：{ '2026-11-03': ['13:00', '14:30'] }
+const CLOSED_SLOTS = {};
+
 // 客人最多可以預約幾天後
 const BOOKING_WINDOW_DAYS = 60;
 
@@ -111,6 +114,7 @@ export const DEFAULT_SETTINGS = {
   timeSlots: TIME_SLOTS,
   closedDates: CLOSED_DATES,
   closedWeekdays: CLOSED_WEEKDAYS,
+  closedSlots: CLOSED_SLOTS,
   bookingWindowDays: BOOKING_WINDOW_DAYS,
   categories: CATEGORIES,
   services: SERVICES,

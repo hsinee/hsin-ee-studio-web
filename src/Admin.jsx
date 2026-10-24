@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { loadSettings, saveSettings } from './settings.js';
-import { WEEKDAYS, fmtDate, todayStr, weekdayOf } from './dates.js';
+import { WEEKDAYS, fmtDate, todayStr, weekdayOf, isClosedDay } from './dates.js';
 import Calendar from './Calendar.jsx';
 
 const SECTIONS = [
@@ -33,6 +33,11 @@ function normalize(s) {
     timeSlots: [...s.timeSlots].sort(),
     closedDates: [...new Set(s.closedDates)].filter((d) => d >= todayStr()).sort(),
     closedWeekdays: [...s.closedWeekdays].sort(),
+    closedSlots: Object.fromEntries(
+      Object.entries(s.closedSlots || {})
+        .filter(([d, list]) => d >= todayStr() && list.length)
+        .map(([d, list]) => [d, [...list].sort()])
+    ),
     bookingWindowDays: toNum(s.bookingWindowDays) || 60,
     services: s.services.map((it) => {
       const base = { id: it.id, category: it.category, name: it.name.trim(), active: it.active !== false };
@@ -435,9 +440,25 @@ function DepositSection({ draft, update }) {
 
 function SlotsSection({ draft, update }) {
   const [newSlot, setNewSlot] = useState('');
+  const [mode, setMode] = useState('day'); // day：整天公休／slots：關閉部分時段
+  const [picked, setPicked] = useState('');
   const slots = [...draft.timeSlots].sort();
   const today = todayStr();
   const upcoming = draft.closedDates.filter((d) => d >= today).sort();
+  const closedSlots = draft.closedSlots || {};
+  const partialDays = Object.keys(closedSlots).filter((d) => d >= today && closedSlots[d].length).sort();
+
+  const setDaySlots = (date, list) =>
+    update((d) => {
+      const next = { ...(d.closedSlots || {}) };
+      if (list.length) next[date] = list;
+      else delete next[date];
+      return { ...d, closedSlots: next };
+    });
+  const toggleSlot = (t) => {
+    const cur = closedSlots[picked] || [];
+    setDaySlots(picked, cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]);
+  };
 
   const add = () => {
     if (!newSlot || draft.timeSlots.includes(newSlot)) return;
@@ -457,15 +478,56 @@ function SlotsSection({ draft, update }) {
 
   const dayState = (d) => {
     const weekly = draft.closedWeekdays.includes(weekdayOf(d));
-    // 每週公休的日子在這裡不能點，要到上方取消
-    return { closed: weekly || draft.closedDates.includes(d), disabled: d < today || weekly };
+    const dayOff = weekly || draft.closedDates.includes(d);
+    const allFull = !dayOff && isClosedDay(d, draft);
+    const partial = (closedSlots[d] || []).length > 0;
+    // 每週公休的日子在這裡不能點，要到下方取消；關閉時段模式下公休日也不能點
+    return {
+      closed: dayOff || allFull,
+      closedLabel: allFull ? '滿' : '休',
+      partial,
+      selected: mode === 'slots' && d === picked,
+      disabled: d < today || weekly || (mode === 'slots' && dayOff),
+    };
   };
 
   return (
     <section>
       <div className="card">
-        <SectionHead title="公休日" desc="點選月曆上的日期設為公休（再點一次取消），客人就無法選那天" />
-        <Calendar minDate={today} dayState={dayState} onPick={toggleDate} />
+        <SectionHead title="公休日與已滿時段" desc="先選擇要做什麼，再點月曆上的日期" />
+        <div className="price-mode mode-switch">
+          <button className={'pill' + (mode === 'day' ? ' active' : '')} onClick={() => setMode('day')}>整天公休</button>
+          <button className={'pill' + (mode === 'slots' ? ' active' : '')} onClick={() => setMode('slots')}>關閉部分時段（已滿）</button>
+        </div>
+        <p className="muted small mode-hint">
+          {mode === 'day' ? '點日期設為公休，再點一次取消' : '點日期，再點下方已經滿的時段'}
+        </p>
+        <Calendar minDate={today} dayState={dayState} onPick={mode === 'day' ? toggleDate : setPicked} />
+
+        {mode === 'slots' && picked && (
+          <div className="slot-close">
+            <div className="field-label-row">{fmtDate(picked)} 已滿的時段（點選切換）</div>
+            <div className="weekday-picks">
+              {slots.map((t) => (
+                <button key={t} type="button" className={'pill' + ((closedSlots[picked] || []).includes(t) ? ' active' : '')} onClick={() => toggleSlot(t)}>
+                  {(closedSlots[picked] || []).includes(t) ? `${t} 已滿` : t}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {partialDays.length > 0 && (
+          <div className="closed-list">
+            {partialDays.map((d) => (
+              <span key={d} className="slot-chip">
+                {fmtDate(d)} {closedSlots[d].slice().sort().join('、')} 已滿
+                <button aria-label={`恢復 ${d} 所有時段`} onClick={() => setDaySlots(d, [])}>✕</button>
+              </span>
+            ))}
+          </div>
+        )}
+
         {upcoming.length > 0 && (
           <div className="closed-list">
             {upcoming.map((d) => (
