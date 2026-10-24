@@ -196,7 +196,10 @@ export default function Booking() {
             note={note}
             setNote={setNote}
             onBack={() => setStep('time')}
-            onNext={() => setStep('done')}
+            onNext={() => {
+              saveCustomer({ name: name.trim(), phone });
+              setStep('done');
+            }}
           />
         )}
 
@@ -292,7 +295,6 @@ function InfoStep({ name, setName, phone, setPhone, tier, setTier, remembered, o
 
   const next = () => {
     setPhone(cleanPhone);
-    saveCustomer({ name: name.trim(), phone: cleanPhone });
     onNext();
   };
 
@@ -301,6 +303,7 @@ function InfoStep({ name, setName, phone, setPhone, tier, setTier, remembered, o
     setName('');
     setPhone('');
     setShowRemembered(false);
+    if (tier) setTier('');
   };
 
   return (
@@ -335,11 +338,13 @@ function InfoStep({ name, setName, phone, setPhone, tier, setTier, remembered, o
       <div className="field">
         <label>預約身分</label>
         <div className="tier-options">
-          {tierOptions(pricing).map((o) => (
-            <button key={o.id} type="button" className={'tier-option' + (tier === o.id ? ' active' : '')} onClick={() => setTier(o.id)}>
-              <span className="tier-option-label">{o.label}</span>
-            </button>
-          ))}
+          {tierOptions(pricing)
+            .filter((o) => !(showRemembered && o.id === 'trial'))
+            .map((o) => (
+              <button key={o.id} type="button" className={'tier-option' + (tier === o.id ? ' active' : '')} onClick={() => setTier(o.id)}>
+                <span className="tier-option-label">{o.label}</span>
+              </button>
+            ))}
         </div>
         <span className="field-hint">本店將依您的到店紀錄核對，如有不符將以實際身分計價</span>
       </div>
