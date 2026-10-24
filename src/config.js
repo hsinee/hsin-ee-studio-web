@@ -1,9 +1,9 @@
 /* ============================================================
-   店家設定檔 —— 前台顯示的文字、價格都在這裡改
-   在 GitHub 網頁上修改這個檔案 →「Commit changes」→ 約 1 分鐘後網站自動更新
+   預設內容 —— 只在後台還沒儲存過任何設定時使用
+   日常修改請到店家後台：https://hsin-ee-booking.vercel.app/admin
    ============================================================ */
 
-export const STORE = {
+const STORE = {
   name: '芯伊 HSIN.EE',
   tagline: '熱蠟除毛工作室',
   // 店家自介（每一行是一段）
@@ -14,11 +14,10 @@ export const STORE = {
   ],
   address: '台北市○○區○○路○號（預約成功後提供詳細位置）',
   hours: '每日 10:00 – 21:00（採預約制）',
-  instagram: 'https://www.instagram.com/',
 };
 
 // 預約須知（每一條是一個項目）
-export const NOTICES = [
+const NOTICES = [
   '本店採全預約制，請提前至少 1 天預約。',
   '預約需先支付訂金，訂金於當日消費中折抵。',
   '如需改期，請於預約時間 24 小時前告知，可保留訂金一次。',
@@ -29,7 +28,7 @@ export const NOTICES = [
 ];
 
 // 價格規則（客人在預約時自己選身分，你在 LINE 收到時再核對）
-export const PRICING = {
+const PRICING = {
   // 回訪價的期限：最近一次到店後幾天內（6 週 = 42 天）
   revisitWindowDays: 42,
   labels: {
@@ -40,7 +39,7 @@ export const PRICING = {
 };
 
 // 訂金與匯款資訊
-export const DEPOSIT = {
+const DEPOSIT = {
   amount: 300, // 固定訂金金額
   bankName: '○○銀行（000）',
   bankAccount: '0000-0000-0000',
@@ -49,21 +48,15 @@ export const DEPOSIT = {
 };
 
 // 官方 LINE：填官方帳號 ID（含 @），客人按「傳送到官方 LINE」會直接打開聊天室並帶入預約資訊
-export const LINE = {
+const LINE = {
   id: '@hsinee',
 };
 
 // 可預約時段
-export const TIME_SLOTS = ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00', '20:30'];
+const TIME_SLOTS = ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00', '20:30'];
 
-/* ------------------------------------------------------------
-   預約項目
-   - 一般項目：填 priceFirstTrial（首次體驗價）、priceRevisit（回訪價）、priceNormal（原價）
-     系統會依客人的身分自動帶入對應價格
-   - 加購 / 保養產品這類固定價格：只填 price 即可
-   - 不想顯示的項目：active: false
-   ------------------------------------------------------------ */
-export const CATEGORIES = [
+// 一般項目填三種價格（priceFirstTrial / priceRevisit / priceNormal），加購、產品等固定價只填 price
+const CATEGORIES = [
   { id: 'small', label: '小部位' },
   { id: 'upper', label: '上半身' },
   { id: 'lower', label: '下半身' },
@@ -72,7 +65,7 @@ export const CATEGORIES = [
   { id: 'product', label: '保養產品' },
 ];
 
-export const SERVICES = [
+const SERVICES = [
   // 小部位
   { id: 'underarm', category: 'small', name: '腋下', duration: 20, priceFirstTrial: 199, priceRevisit: 299, priceNormal: 399 },
   { id: 'lip', category: 'small', name: '唇周', duration: 15, priceFirstTrial: 150, priceRevisit: 199, priceNormal: 250 },
@@ -101,3 +94,14 @@ export const SERVICES = [
   { id: 'product-oil', category: 'product', name: '舒緩修護油 30ml', price: 680 },
   { id: 'product-scrub', category: 'product', name: '溫和去角質霜 100ml', price: 520 },
 ];
+
+export const DEFAULT_SETTINGS = {
+  store: STORE,
+  notices: NOTICES,
+  pricing: PRICING,
+  deposit: DEPOSIT,
+  line: LINE,
+  timeSlots: TIME_SLOTS,
+  categories: CATEGORIES,
+  services: SERVICES,
+};
