@@ -237,14 +237,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 
 /* 價目表 */
 .pl { --price-col: 84px; }
-.pl-head { text-align: center; margin-bottom: 8px; }
-.pl-meta { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; letter-spacing: .12em; }
-.pl-tag { color: var(--rose-deep); }
-.pl-tag-male { color: #8a93c4; }
-.pl-updated { color: #b9aea6; }
-.pl-title { font-family: 'Cormorant Garamond', 'Noto Serif TC', serif; font-weight: 500; font-size: 52px; line-height: 1; margin: 10px 0 8px; letter-spacing: .03em; }
-.pl-sub { margin: 0; font-size: 11px; letter-spacing: .5em; color: var(--brown); }
-.pl-sec { margin-top: 34px; }
+.pl-sec { margin-top: 18px; }
 .pl-sec-head { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid #a99c92; }
 .pl-sec-head h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: .06em; }
 .pl-sec-head span { font-size: 11px; letter-spacing: .12em; color: var(--taupe); }
@@ -271,7 +264,6 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .notes-list strong { font-weight: 700; }
 
 /* 蠟前蠟後 */
-.care-part + .care-part { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); }
 .care-title { font-size: 28px; font-weight: 600; margin: 0; letter-spacing: .08em; }
 .care-title strong { color: var(--rose); font-size: 1.35em; font-weight: 600; margin: 0 2px; }
 .care-en { margin: 4px 0 18px; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: .14em; }
@@ -293,10 +285,6 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .schedule-line { margin-top: 24px; }
 
 /* 關於與頁尾 */
-.site-about { max-width: 640px; margin: 32px auto 0; padding: 28px 16px 8px; text-align: center; border-top: 1px solid var(--line); }
-.about-title { font-size: 15px; font-weight: 400; letter-spacing: .2em; margin: 0 0 14px; }
-.site-about p { margin: 0 0 6px; font-size: 14px; letter-spacing: .04em; }
-.site-about .about-sign { margin-top: 12px; color: var(--taupe); }
 .about-meta { margin: 16px auto 0; font-size: 13px; display: inline-block; text-align: left; }
 .about-meta div { display: flex; gap: 12px; }
 .about-meta dt { color: var(--taupe); white-space: nowrap; }
@@ -313,7 +301,6 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 }
 @media (max-width: 420px) {
   .pl { --price-col: 68px; }
-  .pl-title { font-size: 42px; }
   .pl-name .en { display: block; margin-left: 0; }
   .pl-price { font-size: 14px; }
   .care-block { grid-template-columns: 1fr; gap: 6px; }
@@ -340,3 +327,73 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 @media (max-width: 380px) {
   .site-tab { font-size: 12.5px; padding-left: 4px; padding-right: 4px; letter-spacing: 0; }
 }
+
+/* ---- 分頁裡的分頁 ---- */
+.sub-tabs { display: flex; gap: 4px; padding: 4px; margin: 0 auto 18px; width: fit-content; max-width: 100%; background: rgba(255, 255, 255, .7); border: 1px solid var(--line); border-radius: 30px; }
+.sub-tab { border: none; background: none; padding: 8px 22px; border-radius: 24px; font-size: 14px; color: var(--taupe); cursor: pointer; letter-spacing: .06em; white-space: nowrap; }
+.sub-tab.active { background: var(--brown); color: var(--white); font-weight: 600; }
+
+/* 價目表分類按鈕 */
+.pl-updated { text-align: center; font-size: 11px; color: #b9aea6; letter-spacing: .12em; margin: -8px 0 14px; }
+.cat-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.cat-chip { border: 1px solid var(--line); background: var(--white); color: var(--taupe); border-radius: 20px; padding: 7px 16px; font-size: 13.5px; cursor: pointer; letter-spacing: .04em; }
+.cat-chip.active { border-color: var(--rose-deep); background: var(--rose-deep); color: var(--white); font-weight: 600; }
+.page-en { text-align: center; color: var(--rose); font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: .16em; margin: 0 0 22px; }
+
+/* 居家產品 */
+.product-list { display: grid; gap: 14px; }
+.product { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 16px; background: rgba(255, 255, 255, .75); border: 1px solid var(--line); border-radius: 16px; }
+.product-pic { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.product-pic img { width: 76px; height: 150px; object-fit: contain; mix-blend-mode: multiply; }
+.product-pic-empty { width: 76px; height: 120px; border-radius: 10px; background: var(--cream); }
+.product-pic small { font-family: 'Noto Serif TC', serif; font-size: 12px; color: var(--taupe); letter-spacing: .08em; }
+.product-body h2 { margin: 4px 0 4px; font-size: 17px; font-weight: 600; letter-spacing: .06em; }
+.product-price { margin: 0 0 10px; font-size: 13px; color: var(--taupe); letter-spacing: .06em; font-family: 'Noto Serif TC', serif; }
+.product-body ul, .bundle ul { list-style: none; margin: 0; padding: 0; }
+.product-body li { position: relative; padding-left: 14px; font-size: 14px; line-height: 1.9; }
+.product-body li::before { content: '·'; position: absolute; left: 0; color: var(--taupe); }
+.bundle-list { display: grid; gap: 14px; }
+.bundle { padding: 20px 18px; background: rgba(255, 255, 255, .75); border: 1px solid var(--line); border-radius: 16px; }
+.bundle-title { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: .08em; }
+.bundle-title strong { color: var(--rose); font-size: 1.8em; font-weight: 400; font-family: 'Cormorant Garamond', serif; margin: 0 4px; line-height: 1; }
+.bundle-sub { margin: 4px 0 0; font-size: 13px; color: var(--taupe); letter-spacing: .06em; }
+.bundle-body { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.bundle li { font-size: 14px; line-height: 1.95; letter-spacing: .03em; }
+.bundle li:not(.bundle-group)::before { content: '－ '; color: var(--taupe); }
+.bundle li.bundle-group { margin-top: 8px; color: var(--taupe); font-size: 13px; }
+.bundle li.bundle-group:first-child { margin-top: 0; }
+.bundle-price { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 104px; height: 104px; border-radius: 50%; background: rgba(255, 255, 255, .9); border: 1px solid var(--line); box-shadow: 0 4px 16px rgba(74, 59, 52, .06); font-family: 'Noto Serif TC', serif; }
+.bundle-price small { font-size: 11px; letter-spacing: .16em; }
+.bundle-price strong { font-size: 19px; font-weight: 600; letter-spacing: .04em; }
+.bundle-price s { font-size: 10px; color: var(--taupe); }
+
+/* 關於：玻璃感圓角方塊 */
+.site-about { max-width: 640px; margin: 36px auto 0; padding: 0 16px; }
+.glass {
+  position: relative; overflow: hidden; text-align: center; padding: 30px 22px 26px; border-radius: 28px;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 46px, rgba(170, 160, 150, .14) 46px 47px),
+    repeating-linear-gradient(-45deg, transparent 0 46px, rgba(170, 160, 150, .14) 46px 47px),
+    linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(246, 242, 238, .7));
+  border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 10px 30px rgba(74, 59, 52, .08), inset 0 1px 0 rgba(255, 255, 255, .9);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.about-title { font-size: 15px; font-weight: 400; letter-spacing: .2em; margin: 0 0 14px; }
+.glass p { margin: 0 0 6px; font-size: 14px; letter-spacing: .04em; }
+.glass .about-sign { margin-top: 12px; color: var(--taupe); }
+
+@media (max-width: 420px) {
+  .sub-tab { padding: 8px 18px; }
+  .product { grid-template-columns: 72px 1fr; gap: 12px; padding: 14px 12px; }
+  .product-pic img { width: 64px; height: 130px; }
+  .bundle-title { font-size: 19px; }
+  .bundle-price { width: 92px; height: 92px; }
+  .bundle-price strong { font-size: 17px; }
+}
+
+/* 後台：產品 */
+.product-edit-row { display: flex; gap: 14px; align-items: flex-start; }
+.product-thumb { width: 56px; height: 110px; object-fit: contain; flex-shrink: 0; border-radius: 8px; background: var(--paper); mix-blend-mode: multiply; }
+.product-thumb.empty { display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--taupe); mix-blend-mode: normal; }
+.product-edit-fields { flex: 1; min-width: 0; }

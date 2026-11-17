@@ -28,18 +28,33 @@ function igUrl(handle) {
   return `https://www.instagram.com/${String(handle || '').replace(/^@/, '')}/`;
 }
 
-function tabsOf(settings) {
-  return [
-    ...settings.priceLists.map((l) => ({ id: l.id, label: l.label })),
-    { id: 'notes', label: settings.bookingNotes.title || '預約須知' },
-    { id: 'care', label: '蠟前蠟後' },
-    { id: 'schedule', label: '可預約時段' },
-  ];
+const TABS = [
+  { id: 'notes', label: '預約須知' },
+  { id: 'schedule', label: '當月時段' },
+  { id: 'care', label: '蠟前蠟後' },
+  { id: 'prices', label: '價目表' },
+  { id: 'products', label: '居家產品' },
+];
+
+// 網址 #分頁 或 #分頁/子分頁，例如 #prices/male、#care/after
+function readHash() {
+  const [tab, sub] = decodeURIComponent(window.location.hash.slice(1)).split('/');
+  // 舊網址 #female、#male 導到價目表
+  if (tab === 'female' || tab === 'male') return { tab: 'prices', sub: tab };
+  return { tab: TABS.some((t) => t.id === tab) ? tab : TABS[0].id, sub: sub || '' };
 }
 
-function tabFromHash(tabs) {
-  const id = decodeURIComponent(window.location.hash.slice(1));
-  return tabs.some((t) => t.id === id) ? id : tabs[0].id;
+// 分頁裡的分頁（膠囊切換）
+function SubTabs({ options, value, onChange }) {
+  return (
+    <div className="sub-tabs" role="tablist">
+      {options.map((o) => (
+        <button key={o.id} role="tab" aria-selected={value === o.id} className={'sub-tab' + (value === o.id ? ' active' : '')} onClick={() => onChange(o.id)}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 /* ============================================================
@@ -47,28 +62,26 @@ function tabFromHash(tabs) {
    ============================================================ */
 
 export default function Site() {
-  const settings = useSettings();
-  const { store, line } = settings;
-  const tabs = tabsOf(settings);
-  const [tab, setTab] = useState(() => tabFromHash(tabs));
+  const { store, line } = useSettings();
+  const [route, setRoute] = useState(readHash);
+  const { tab, sub } = route;
 
-  // 網址帶 #female、#schedule 等可直接開到該分頁（方便貼在 IG / LINE）
+  // 網址帶 #notes、#prices/male 等可直接開到該分頁（方便貼在 IG / LINE）
   useEffect(() => {
-    const onHash = () => setTab(tabFromHash(tabsOf(settings)));
+    const onHash = () => setRoute(readHash());
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-  }, [settings]);
+  }, []);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [tab]);
 
-  const go = (id) => {
-    setTab(id);
-    history.replaceState(null, '', '#' + id);
+  const go = (nextTab, nextSub = '') => {
+    setRoute({ tab: nextTab, sub: nextSub });
+    history.replaceState(null, '', '#' + nextTab + (nextSub ? '/' + nextSub : ''));
   };
-
-  const list = settings.priceLists.find((l) => l.id === tab);
+  const setSub = (s) => go(tab, s);
 
   return (
     <div className="page site">
@@ -79,7 +92,7 @@ export default function Site() {
 
       <nav className="site-tabs" aria-label="分頁">
         <div className="site-tabs-inner">
-          {tabs.map((t) => (
+          {TABS.map((t) => (
             <button key={t.id} className={'site-tab' + (tab === t.id ? ' active' : '')} onClick={() => go(t.id)} aria-current={tab === t.id ? 'page' : undefined}>
               {t.label}
             </button>
@@ -88,39 +101,42 @@ export default function Site() {
       </nav>
 
       <main className="site-main step-in" key={tab}>
-        {list && <PriceList list={list} />}
         {tab === 'notes' && <BookingNotes />}
-        {tab === 'care' && <Care />}
         {tab === 'schedule' && <Schedule />}
+        {tab === 'care' && <Care sub={sub} setSub={setSub} />}
+        {tab === 'prices' && <Prices sub={sub} setSub={setSub} />}
+        {tab === 'products' && <Products sub={sub} setSub={setSub} />}
       </main>
 
       <section className="site-about">
-        <h2 className="about-title serif">ABOUT {store.name}</h2>
-        {store.intro.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-        {store.signature && <p className="about-sign">{store.signature}</p>}
-        {(store.hours || store.address) && (
-          <dl className="about-meta">
-            {store.hours && (
-              <div>
-                <dt>營業時間</dt>
-                <dd>{store.hours}</dd>
-              </div>
-            )}
-            {store.address && (
-              <div>
-                <dt>地點</dt>
-                <dd>{store.address}</dd>
-              </div>
-            )}
-          </dl>
-        )}
+        <div className="glass">
+          <h2 className="about-title serif">ABOUT {store.name}</h2>
+          {store.intro.map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
+          {store.signature && <p className="about-sign">{store.signature}</p>}
+          {(store.hours || store.address) && (
+            <dl className="about-meta">
+              {store.hours && (
+                <div>
+                  <dt>營業時間</dt>
+                  <dd>{store.hours}</dd>
+                </div>
+              )}
+              {store.address && (
+                <div>
+                  <dt>地點</dt>
+                  <dd>{store.address}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </div>
       </section>
 
       <footer className="site-foot">
-        <span className="foot-badge">預約制</span>
-        <span className="foot-en">BY APPOINTMENT ONLY</span>
+        {store.footerBadge && <span className="foot-badge">{store.footerBadge}</span>}
+        {store.footerText && <span className="foot-en">{store.footerText}</span>}
         <div className="foot-links">
           {store.instagram && (
             <a href={igUrl(store.instagram)} target="_blank" rel="noreferrer">IG {store.instagram}</a>
@@ -129,7 +145,7 @@ export default function Site() {
         </div>
       </footer>
 
-      {/* 「可預約時段」分頁本身已有 LINE 按鈕 */}
+      {/* 「當月時段」分頁本身已有 LINE 按鈕 */}
       {tab !== 'schedule' && (
         <a className="line-cta" href={lineUrl(line.id)} target="_blank" rel="noreferrer">
           LINE 預約
@@ -140,69 +156,216 @@ export default function Site() {
 }
 
 /* ============================================================
-   價目表
+   價目表：女生／男生 → 分類按鈕 → 該分類的價格
    ============================================================ */
 
-function PriceList({ list }) {
+function Prices({ sub, setSub }) {
+  const { priceLists } = useSettings();
+  const list = priceLists.find((l) => l.id === sub) || priceLists[0];
+  const [secIndex, setSecIndex] = useState(0);
+  const sec = list.sections[Math.min(secIndex, list.sections.length - 1)];
+
+  const pickList = (id) => {
+    setSecIndex(0);
+    setSub(id);
+  };
+
   return (
     <article className="pl">
-      <div className="pl-head">
-        <div className="pl-meta">
-          {list.tag && <span className={'pl-tag pl-tag-' + list.id}>{list.tag}</span>}
-          {list.updated && <span className="pl-updated">{list.updated}</span>}
-        </div>
-        <h1 className="pl-title">PRICE LIST</h1>
-        {list.subtitle && <p className="pl-sub">{list.subtitle}</p>}
+      <SubTabs options={priceLists.map((l) => ({ id: l.id, label: l.label }))} value={list.id} onChange={pickList} />
+      {list.updated && <p className="pl-updated">{list.updated}</p>}
+
+      <div className="cat-chips" role="tablist">
+        {list.sections.map((s, i) => (
+          <button key={i} role="tab" aria-selected={s === sec} className={'cat-chip' + (s === sec ? ' active' : '')} onClick={() => setSecIndex(i)}>
+            {s.title}
+          </button>
+        ))}
       </div>
 
-      {list.sections.map((sec, si) => {
-        const cols = sec.columns.length || 1;
-        const hasHeader = sec.columns.some((c) => c.zh || c.en);
-        const grid = { gridTemplateColumns: `minmax(0, 1fr) repeat(${cols}, var(--price-col))` };
-        return (
-          <section key={si} className="pl-sec">
-            <div className="pl-sec-head">
-              <h2 className="serif">{sec.title}</h2>
-              {sec.en && <span>{sec.en}</span>}
-            </div>
-            {hasHeader && (
-              <div className="pl-row pl-cols" style={grid}>
-                <span />
-                {sec.columns.map((c, ci) => (
-                  <span key={ci} className="pl-col">
-                    <b>{c.zh}</b>
-                    <small>{c.en}</small>
-                  </span>
-                ))}
-              </div>
-            )}
-            {sec.items.map((it, ii) => {
-              const prices = it.prices || [];
-              // 只有第一欄有字時（例如「依毛量報價」），橫跨所有價格欄
-              const spanAll = cols > 1 && prices[0] && prices.slice(1).every((p) => !p);
-              return (
-                <div key={ii} className="pl-row pl-item" style={grid}>
-                  <div className="pl-name">
-                    <span className="zh">{it.name}</span>
-                    {it.en && <span className="en">{it.en}</span>}
-                    {it.note && <span className="note">（{it.note}）</span>}
-                  </div>
-                  {spanAll ? (
-                    <span className="pl-price span" style={{ gridColumn: `2 / span ${cols}` }}>{prices[0]}</span>
-                  ) : (
-                    sec.columns.map((_, ci) => (
-                      <span key={ci} className="pl-price">{prices[ci] || ''}</span>
-                    ))
-                  )}
-                </div>
-              );
-            })}
-          </section>
-        );
-      })}
+      {sec && <PriceSection sec={sec} key={list.id + secIndex} />}
 
       {list.footnote && <p className="pl-foot">{list.footnote}</p>}
     </article>
+  );
+}
+
+function PriceSection({ sec }) {
+  const cols = sec.columns.length || 1;
+  const hasHeader = sec.columns.some((c) => c.zh || c.en);
+  const grid = { gridTemplateColumns: `minmax(0, 1fr) repeat(${cols}, var(--price-col))` };
+  return (
+    <section className="pl-sec step-in">
+      <div className="pl-sec-head">
+        <h2 className="serif">{sec.title}</h2>
+        {sec.en && <span>{sec.en}</span>}
+      </div>
+      {hasHeader && (
+        <div className="pl-row pl-cols" style={grid}>
+          <span />
+          {sec.columns.map((c, ci) => (
+            <span key={ci} className="pl-col">
+              <b>{c.zh}</b>
+              <small>{c.en}</small>
+            </span>
+          ))}
+        </div>
+      )}
+      {sec.items.map((it, ii) => {
+        const prices = it.prices || [];
+        // 只有第一欄有字時（例如「依毛量報價」），橫跨所有價格欄
+        const spanAll = cols > 1 && prices[0] && prices.slice(1).every((p) => !p);
+        return (
+          <div key={ii} className="pl-row pl-item" style={grid}>
+            <div className="pl-name">
+              <span className="zh">{it.name}</span>
+              {it.en && <span className="en">{it.en}</span>}
+              {it.note && <span className="note">（{it.note}）</span>}
+            </div>
+            {spanAll ? (
+              <span className="pl-price span" style={{ gridColumn: `2 / span ${cols}` }}>{prices[0]}</span>
+            ) : (
+              sec.columns.map((_, ci) => (
+                <span key={ci} className="pl-price">{prices[ci] || ''}</span>
+              ))
+            )}
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+/* ============================================================
+   蠟前蠟後：蠟前遵守／蠟後必看
+   ============================================================ */
+
+function Care({ sub, setSub }) {
+  const { care } = useSettings();
+  const which = sub === 'after' ? 'after' : 'before';
+  const part = care[which];
+  return (
+    <article className="care">
+      <SubTabs
+        options={[
+          { id: 'before', label: care.before.tab || '蠟前遵守' },
+          { id: 'after', label: care.after.tab || '蠟後必看' },
+        ]}
+        value={which}
+        onChange={setSub}
+      />
+      <section className="care-part step-in" key={which}>
+        <h1 className="care-title serif">
+          <Rich text={part.title} />
+        </h1>
+        {part.en && <p className="care-en">{part.en}</p>}
+        <div className="care-blocks">
+          {part.blocks.map((b, bi) => (
+            <div key={bi} className="care-block">
+              <div className="care-block-head">
+                <h2 className="serif">{b.title}</h2>
+                {b.en && <span>{b.en}</span>}
+              </div>
+              <ul>
+                {b.items.map((it, ii) => (
+                  <li key={ii}>
+                    <Rich text={it} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+    </article>
+  );
+}
+
+/* ============================================================
+   居家產品：產品介紹／產品組合
+   ============================================================ */
+
+function Products({ sub, setSub }) {
+  const { products } = useSettings();
+  const which = sub === 'bundles' ? 'bundles' : 'intro';
+  const part = products[which];
+  return (
+    <article className="products">
+      <SubTabs
+        options={[
+          { id: 'intro', label: products.intro.tab || '產品介紹' },
+          { id: 'bundles', label: products.bundles.tab || '產品組合' },
+        ]}
+        value={which}
+        onChange={setSub}
+      />
+      <section className="step-in" key={which}>
+        <h1 className="page-title serif">{part.title}</h1>
+        {part.en && <p className="page-en">{part.en}</p>}
+        {which === 'intro' ? <ProductList part={part} /> : <BundleList part={part} />}
+      </section>
+    </article>
+  );
+}
+
+function ProductList({ part }) {
+  return (
+    <div className="product-list">
+      {part.items.map((p, i) => (
+        <div key={i} className="product">
+          <div className="product-pic">
+            {p.image ? <img src={p.image} alt={p.name} loading="lazy" /> : <span className="product-pic-empty" />}
+            {p.size && <small>{p.size}</small>}
+          </div>
+          <div className="product-body">
+            <h2 className="serif">{p.name}</h2>
+            {p.price && (
+              <p className="product-price">
+                ／{part.priceLabel || '專屬價'}　{p.price}
+              </p>
+            )}
+            <ul>
+              {p.points.map((pt, j) => (
+                <li key={j}>{pt}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BundleList({ part }) {
+  return (
+    <div className="bundle-list">
+      {part.items.map((b, i) => (
+        <div key={i} className="bundle">
+          <h2 className="bundle-title serif">
+            <Rich text={b.title} />
+          </h2>
+          {b.subtitle && <p className="bundle-sub">{b.subtitle}</p>}
+          <div className="bundle-body">
+            <ul>
+              {b.lines.map((l, j) =>
+                /[／/:：]$|^[A-Z]區／/.test(l) ? (
+                  <li key={j} className="bundle-group">{l}</li>
+                ) : (
+                  <li key={j}>{l}</li>
+                )
+              )}
+            </ul>
+            {b.price && (
+              <div className="bundle-price">
+                <small>ONLY</small>
+                <strong>{b.price}</strong>
+                {b.original && <s>原價{b.original}</s>}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -232,44 +395,7 @@ function BookingNotes() {
 }
 
 /* ============================================================
-   蠟前蠟後
-   ============================================================ */
-
-function Care() {
-  const { care } = useSettings();
-  return (
-    <article className="care">
-      {[care.before, care.after].map((part, pi) => (
-        <section key={pi} className="care-part">
-          <h1 className="care-title serif">
-            <Rich text={part.title} />
-          </h1>
-          {part.en && <p className="care-en">{part.en}</p>}
-          <div className="care-blocks">
-            {part.blocks.map((b, bi) => (
-              <div key={bi} className="care-block">
-                <div className="care-block-head">
-                  <h2 className="serif">{b.title}</h2>
-                  {b.en && <span>{b.en}</span>}
-                </div>
-                <ul>
-                  {b.items.map((it, ii) => (
-                    <li key={ii}>
-                      <Rich text={it} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
-    </article>
-  );
-}
-
-/* ============================================================
-   可預約時段（只供查看，預約請私訊官方 LINE）
+   當月時段（只供查看，預約請私訊官方 LINE）
    ============================================================ */
 
 function Schedule() {

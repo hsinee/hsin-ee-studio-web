@@ -4,7 +4,7 @@ import { head, put, BlobNotFoundError } from '@vercel/blob';
 const PATHNAME = 'settings.json';
 const MAX_BYTES = 200 * 1024;
 // 只保存、只回傳這些欄位；舊版的匯款資訊、預約項目等會被丟掉
-const ALLOWED_KEYS = ['store', 'line', 'priceLists', 'bookingNotes', 'care', 'timeSlots', 'closedDates', 'closedWeekdays', 'closedSlots', 'openNextMonthDay'];
+const ALLOWED_KEYS = ['store', 'line', 'priceLists', 'bookingNotes', 'care', 'products', 'timeSlots', 'closedDates', 'closedWeekdays', 'closedSlots', 'openNextMonthDay'];
 const REQUIRED_KEYS = ['store', 'line', 'priceLists', 'bookingNotes', 'care', 'timeSlots'];
 
 function pick(obj) {
