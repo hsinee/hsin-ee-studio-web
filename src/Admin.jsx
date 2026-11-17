@@ -5,12 +5,14 @@ import Calendar from './Calendar.jsx';
 
 function sectionsOf(draft) {
   return [
-    { id: 'store', label: '店家資訊' },
-    ...draft.priceLists.map((l, i) => ({ id: 'price-' + i, label: l.label || `價目表 ${i + 1}` })),
     { id: 'notes', label: '預約須知' },
-    { id: 'care-before', label: '熱蠟前' },
-    { id: 'care-after', label: '熱蠟後' },
     { id: 'slots', label: '時段與公休' },
+    { id: 'care-before', label: draft.care.before.tab || '蠟前遵守' },
+    { id: 'care-after', label: draft.care.after.tab || '蠟後必看' },
+    ...draft.priceLists.map((l, i) => ({ id: 'price-' + i, label: `${l.label || i + 1}價目表` })),
+    { id: 'products', label: '產品介紹' },
+    { id: 'bundles', label: '產品組合' },
+    { id: 'store', label: '店家資訊與頁底' },
   ];
 }
 
@@ -49,6 +51,20 @@ function normalize(s) {
         { ...part, blocks: part.blocks.map((b) => ({ ...b, items: b.items.map(trim).filter(Boolean) })) },
       ])
     ),
+    products: {
+      intro: {
+        ...s.products.intro,
+        items: s.products.intro.items
+          .filter((p) => trim(p.name))
+          .map((p) => ({ ...p, name: trim(p.name), size: trim(p.size), price: trim(p.price), points: p.points.map(trim).filter(Boolean) })),
+      },
+      bundles: {
+        ...s.products.bundles,
+        items: s.products.bundles.items
+          .filter((b) => trim(b.title))
+          .map((b) => ({ ...b, title: trim(b.title), subtitle: trim(b.subtitle), price: trim(b.price), original: trim(b.original), lines: b.lines.map(trim).filter(Boolean) })),
+      },
+    },
     timeSlots: [...s.timeSlots].sort(),
     closedDates: [...new Set(s.closedDates)].filter((d) => d >= todayStr()).sort(),
     closedWeekdays: [...s.closedWeekdays].sort(),
@@ -76,7 +92,7 @@ function validate(s) {
 export default function Admin() {
   const [draft, setDraft] = useState(null);
   const [loadError, setLoadError] = useState(false);
-  const [section, setSection] = useState('store');
+  const [section, setSection] = useState('notes');
   const [dirty, setDirty] = useState(false);
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
@@ -163,6 +179,8 @@ export default function Admin() {
         {section === 'notes' && <NotesSection draft={draft} update={update} />}
         {section === 'care-before' && <CareSection key="before" part="before" draft={draft} update={update} />}
         {section === 'care-after' && <CareSection key="after" part="after" draft={draft} update={update} />}
+        {section === 'products' && <ProductsSection draft={draft} update={update} />}
+        {section === 'bundles' && <BundlesSection draft={draft} update={update} />}
         {section === 'slots' && <SlotsSection draft={draft} update={update} />}
 
         <div className="admin-mobile-foot">
@@ -234,7 +252,7 @@ function StoreSection({ draft, update }) {
   };
   return (
     <section className="card">
-      <SectionHead title="店家資訊" desc="顯示在每一頁的上方與下方" />
+      <SectionHead title="店家資訊與頁底" desc="顯示在每一頁的上方、下方「關於」方塊與頁底" />
       <div className="grid-2">
         <Field label="店名"><input value={draft.store.name} onChange={set('name')} /></Field>
         <Field label="標語"><input value={draft.store.tagline} placeholder="例如：PREMIUM WAXING" onChange={set('tagline')} /></Field>
@@ -261,6 +279,10 @@ function StoreSection({ draft, update }) {
         <Field label="Instagram 帳號（選填）" hint="不用加 @，例如 hsin.ee">
           <input value={draft.store.instagram || ''} onChange={set('instagram')} />
         </Field>
+      </div>
+      <div className="grid-2">
+        <Field label="頁底標籤（選填）"><input value={draft.store.footerBadge || ''} placeholder="例如：預約制" onChange={set('footerBadge')} /></Field>
+        <Field label="頁底文字（選填）"><input value={draft.store.footerText || ''} placeholder="例如：BY APPOINTMENT ONLY" onChange={set('footerText')} /></Field>
       </div>
     </section>
   );
@@ -289,16 +311,12 @@ function PriceListSection({ index, draft, update }) {
   return (
     <section>
       <div className="card">
-        <SectionHead title={list.label || '價目表'} desc="價格可以直接打文字，例如 $1,200、依毛量報價、-" />
+        <SectionHead title={`${list.label || ''}價目表`} desc="每個區塊會變成價目表上方的分類按鈕；價格可以直接打文字，例如 $1,200、依毛量報價、-" />
         <div className="grid-2">
-          <Field label="分頁名稱"><input value={list.label} onChange={setField('label')} /></Field>
-          <Field label="標籤"><input value={list.tag || ''} placeholder="例如：FEMALE ONLY" onChange={setField('tag')} /></Field>
+          <Field label="切換按鈕名稱"><input value={list.label} placeholder="例如：女生" onChange={setField('label')} /></Field>
+          <Field label="更新日期（選填）"><input value={list.updated || ''} placeholder="例如：2026.10.01 更新" onChange={setField('updated')} /></Field>
         </div>
-        <div className="grid-2">
-          <Field label="更新日期"><input value={list.updated || ''} placeholder="例如：2026.10.01 更新" onChange={setField('updated')} /></Field>
-          <Field label="副標題"><input value={list.subtitle || ''} placeholder="例如：PREMIUM WAXING" onChange={setField('subtitle')} /></Field>
-        </div>
-        <Field label="底部備註"><input value={list.footnote || ''} placeholder="例如：*六周內回除皆享體驗價" onChange={setField('footnote')} /></Field>
+        <Field label="底部備註（選填）"><input value={list.footnote || ''} placeholder="例如：*六周內回除皆享體驗價" onChange={setField('footnote')} /></Field>
       </div>
 
       {list.sections.map((sec, si) => (
@@ -442,7 +460,8 @@ function CareSection({ part, draft, update }) {
   return (
     <section>
       <div className="card">
-        <SectionHead title={part === 'before' ? '熱蠟前' : '熱蠟後'} desc="顯示在「蠟前蠟後」分頁；用 **兩個星號** 包起來的字會變成強調色" />
+        <SectionHead title={data.tab || (part === 'before' ? '蠟前遵守' : '蠟後必看')} desc="顯示在「蠟前蠟後」分頁；用 **兩個星號** 包起來的字會變成強調色" />
+        <Field label="切換按鈕名稱"><input value={data.tab || ''} onChange={(e) => { const v = e.target.value; setPart((p) => ({ ...p, tab: v })); }} /></Field>
         <div className="grid-2">
           <Field label="大標題"><input value={data.title} onChange={(e) => { const v = e.target.value; setPart((p) => ({ ...p, title: v })); }} /></Field>
           <Field label="英文標題"><input value={data.en || ''} onChange={(e) => { const v = e.target.value; setPart((p) => ({ ...p, en: v })); }} /></Field>
@@ -472,6 +491,94 @@ function CareSection({ part, draft, update }) {
       ))}
 
       <button className="btn-secondary full add-service" onClick={() => setBlocks((all) => [...all, { title: '', en: '', items: [] }])}>＋ 新增小區塊</button>
+    </section>
+  );
+}
+
+/* ============================================================
+   居家產品：產品介紹／產品組合
+   ============================================================ */
+
+function PartHeader({ part, draft, update, title }) {
+  const data = draft.products[part];
+  const set = (key) => (e) => {
+    const v = e.target.value;
+    update((d) => ({ ...d, products: { ...d.products, [part]: { ...d.products[part], [key]: v } } }));
+  };
+  return (
+    <div className="card">
+      <SectionHead title={title} desc="顯示在「居家產品」分頁" />
+      <div className="grid-2">
+        <Field label="切換按鈕名稱"><input value={data.tab || ''} onChange={set('tab')} /></Field>
+        <Field label="標題"><input value={data.title || ''} onChange={set('title')} /></Field>
+      </div>
+      <div className="grid-2">
+        <Field label="英文標題（選填）"><input value={data.en || ''} onChange={set('en')} /></Field>
+        {part === 'intro' && <Field label="價格前的文字"><input value={data.priceLabel || ''} placeholder="例如：專屬價" onChange={set('priceLabel')} /></Field>}
+      </div>
+    </div>
+  );
+}
+
+function ProductsSection({ draft, update }) {
+  const items = draft.products.intro.items;
+  const setItems = (fn) => update((d) => ({ ...d, products: { ...d.products, intro: { ...d.products.intro, items: fn(d.products.intro.items) } } }));
+  const setItem = (i, changes) => setItems((all) => all.map((p, j) => (j === i ? { ...p, ...changes } : p)));
+  return (
+    <section>
+      <PartHeader part="intro" draft={draft} update={update} title="產品介紹" />
+      {items.map((p, i) => (
+        <div key={i} className="card product-edit">
+          <div className="product-edit-row">
+            {p.image ? <img src={p.image} alt="" className="product-thumb" /> : <span className="product-thumb empty">無圖片</span>}
+            <div className="product-edit-fields">
+              <input className="name-input" value={p.name} placeholder="產品名稱" onChange={(e) => setItem(i, { name: e.target.value })} />
+              <div className="grid-2">
+                <Field label="容量"><input value={p.size || ''} placeholder="例如：150ml" onChange={(e) => setItem(i, { size: e.target.value })} /></Field>
+                <Field label="價格"><input value={p.price || ''} placeholder="例如：$1,280" onChange={(e) => setItem(i, { price: e.target.value })} /></Field>
+              </div>
+            </div>
+          </div>
+          <Field label="特色" hint="每換一行就是一點">
+            <textarea rows={Math.max(3, p.points.length + 1)} value={p.points.join('\n')} onChange={(e) => setItem(i, { points: lines(e.target.value) })} />
+          </Field>
+          <div className="service-edit-foot">
+            {p.image ? <button className="icon-btn" onClick={() => setItem(i, { image: '' })}>移除圖片</button> : <span className="field-hint">需要放產品照片時，把照片傳給 Claude</span>}
+            <RowTools index={i} count={items.length} onMove={(dir) => setItems((all) => moveItem(all, i, dir))} onDelete={() => setItems((all) => all.filter((_, j) => j !== i))} confirmText={`確定刪除「${p.name || '這個產品'}」？`} />
+          </div>
+        </div>
+      ))}
+      <button className="btn-secondary full add-service" onClick={() => setItems((all) => [...all, { name: '', size: '', price: '', image: '', points: [] }])}>＋ 新增產品</button>
+    </section>
+  );
+}
+
+function BundlesSection({ draft, update }) {
+  const items = draft.products.bundles.items;
+  const setItems = (fn) => update((d) => ({ ...d, products: { ...d.products, bundles: { ...d.products.bundles, items: fn(d.products.bundles.items) } } }));
+  const setItem = (i, changes) => setItems((all) => all.map((b, j) => (j === i ? { ...b, ...changes } : b)));
+  return (
+    <section>
+      <PartHeader part="bundles" draft={draft} update={update} title="產品組合" />
+      {items.map((b, i) => (
+        <div key={i} className="card">
+          <input className="name-input" value={b.title} placeholder="組合名稱，例如：小資族必備 **2** 寶" onChange={(e) => setItem(i, { title: e.target.value })} />
+          <p className="field-hint">用 **兩個星號** 包起來的字（例如數字）會放大成強調色</p>
+          <Field label="副標題（選填）"><input value={b.subtitle || ''} onChange={(e) => setItem(i, { subtitle: e.target.value })} /></Field>
+          <Field label="內容" hint="每換一行就是一項；以「／」結尾的行（例如 A區／）會顯示成小標">
+            <textarea rows={Math.max(3, b.lines.length + 1)} value={b.lines.join('\n')} onChange={(e) => setItem(i, { lines: lines(e.target.value) })} />
+          </Field>
+          <div className="grid-2">
+            <Field label="優惠價"><input value={b.price || ''} placeholder="例如：$2,499" onChange={(e) => setItem(i, { price: e.target.value })} /></Field>
+            <Field label="原價（選填）"><input value={b.original || ''} placeholder="例如：$2,860" onChange={(e) => setItem(i, { original: e.target.value })} /></Field>
+          </div>
+          <div className="service-edit-foot">
+            <span />
+            <RowTools index={i} count={items.length} onMove={(dir) => setItems((all) => moveItem(all, i, dir))} onDelete={() => setItems((all) => all.filter((_, j) => j !== i))} confirmText={`確定刪除「${b.title || '這個組合'}」？`} />
+          </div>
+        </div>
+      ))}
+      <button className="btn-secondary full add-service" onClick={() => setItems((all) => [...all, { title: '', subtitle: '', lines: [], price: '', original: '' }])}>＋ 新增組合</button>
     </section>
   );
 }

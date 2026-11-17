@@ -16,6 +16,9 @@ const STORE = {
   address: '',
   hours: '',
   instagram: 'hsin.ee',
+  // 頁底文字
+  footerBadge: '預約制',
+  footerText: 'BY APPOINTMENT ONLY',
 };
 
 const LINE = {
@@ -35,9 +38,7 @@ const ONE_PRICE = [{ zh: '', en: '' }];
 
 const FEMALE = {
   id: 'female',
-  label: '女生價目表',
-  tag: 'FEMALE ONLY',
-  subtitle: 'PREMIUM WAXING',
+  label: '女生',
   updated: '2026.10.01 更新',
   footnote: '*六周內回除皆享體驗價',
   sections: [
@@ -99,9 +100,7 @@ const FEMALE = {
 
 const MALE = {
   id: 'male',
-  label: '男生價目表',
-  tag: 'MALE ONLY',
-  subtitle: 'PREMIUM WAXING',
+  label: '男生',
   updated: '2026.08.01 更新',
   footnote: '*六周內回除皆享體驗價',
   sections: [
@@ -178,6 +177,7 @@ const BOOKING_NOTES = {
 // 熱蠟前後照顧
 const CARE = {
   before: {
+    tab: '蠟前遵守',
     title: '熱蠟**前**請遵守！',
     en: 'PRE-WAX INSTRUCTIONS',
     blocks: [
@@ -209,20 +209,68 @@ const CARE = {
     ],
   },
   after: {
+    tab: '蠟後必看',
     title: '熱蠟**後**必看！',
     en: 'WAX AFTERCARE',
     blocks: [
-      { title: '02 HOUR', en: '/ 時', items: ['施做部位避免接觸到生水/淋浴'] },
+      { title: '02 HOUR', en: '', items: ['施做部位避免接觸到生水/淋浴'] },
       {
         title: '03 DAYS',
-        en: '/ 天',
+        en: '',
         items: ['避免游泳、泡湯、三溫暖等水上活動', '私密處熱蠟後，避免親密性行為', '盡量穿著寬鬆衣褲，避免肌膚摩擦', '激烈運動或大量流汗後，盡快清潔肌膚', '避免使用過熱的洗澡水'],
       },
-      { title: '01 WEEK', en: '/ 週', items: ['暫停使用A酸、果酸等換膚產品', '避免使用止汗產品/體香膏'] },
+      { title: '01 WEEK', en: '', items: ['暫停使用A酸、果酸等換膚產品', '避免使用止汗產品/體香膏'] },
       {
         title: '居家保養',
         en: 'Home Care',
         items: ['徹底清潔，時時保濕', '使用專業保養品，避免人造香料', '定期去角質，預防內包毛', '4–6 週定期回除，延緩毛髮生長'],
+      },
+    ],
+  },
+};
+
+// 居家產品：產品介紹與產品組合
+const PRODUCTS = {
+  intro: {
+    tab: '產品介紹',
+    title: '產品介紹',
+    en: 'PRODUCTS INTRODUCTION',
+    priceLabel: '專屬價',
+    items: [
+      { name: '葡萄籽去角質', size: '60g', price: '$1,280', image: '/products/grape-scrub.webp', points: ['天然葡萄籽製造', '代謝老廢角質', '預防內包毛產生'] },
+      { name: '玫瑰精萃肌膚養護精華凝露', size: '150ml', price: '$1,580', image: '/products/rose-gel.webp', points: ['保濕、鎮定、補水', '增加肌膚保水度', '高純度玻尿酸'] },
+      { name: '豐盈嫩白抗菌精華霜', size: '30g', price: '$1,080', image: '/products/brightening-cream.webp', points: ['清爽乳霜質地', '肌膚暗沉救星', '瞬吸不黏膩'] },
+      { name: '嫩白保濕潔淨慕斯', size: '150ml', price: '$1,080', image: '/products/cleansing-mousse.webp', points: ['天然花卉植萃配方', '平衡私密處的酸鹼值', '一瓶使用半年不是問題'] },
+      { name: '360度秘密花園保衛噴霧', size: '35ml', price: '$1,180', image: '/products/secret-spray.webp', points: ['泌尿道感染救星', '抗菌除臭', '玫瑰純露不添加水'] },
+      { name: '玫瑰精萃肌膚養護潤膚乳', size: '250ml', price: '$1,180', image: '/products/rose-lotion.webp', points: ['維他命E', '高麗人參萃取液', '肌膚濕潤光澤'] },
+    ],
+  },
+  bundles: {
+    tab: '產品組合',
+    title: '產品組合',
+    en: 'RECOMMENDED ROUTINE',
+    items: [
+      {
+        title: '小資族必備 **2** 寶',
+        subtitle: '跟毛囊炎SAY BYE BYE',
+        lines: ['葡萄籽去角質', '玫瑰精萃肌膚養護精華凝露'],
+        price: '$2,499',
+        original: '$2,860',
+      },
+      {
+        title: 'CP值套組 **3** 寶',
+        subtitle: '',
+        // 以「／」結尾的行會顯示成小標
+        lines: ['A區／', '葡萄籽去角質', '玫瑰精萃肌膚養護精華凝露', 'B區／三選一', '嫩白保濕潔淨慕斯', '豐盈嫩白抗菌精華霜', '360°秘密花園保衛噴霧'],
+        price: '$3,199',
+        original: '$3,940',
+      },
+      {
+        title: '蠟後 **5** 寶推薦',
+        subtitle: '多種效果一次滿足，輕鬆擁有燈泡肌',
+        lines: ['葡萄籽去角質', '嫩白保濕潔淨慕斯', '豐盈嫩白抗菌精華霜', '玫瑰精萃肌膚養護精華凝露', '360°秘密花園保衛噴霧'],
+        price: '$4,650',
+        original: '$6,200',
       },
     ],
   },
@@ -247,6 +295,7 @@ export const DEFAULT_SETTINGS = {
   priceLists: [FEMALE, MALE],
   bookingNotes: BOOKING_NOTES,
   care: CARE,
+  products: PRODUCTS,
   timeSlots: TIME_SLOTS,
   closedDates: CLOSED_DATES,
   closedWeekdays: CLOSED_WEEKDAYS,
