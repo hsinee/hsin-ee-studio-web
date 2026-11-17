@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { loadSettings, saveSettings } from './settings.js';
+import { loadSettings, saveSettings, shortListLabel } from './settings.js';
 import { WEEKDAYS, fmtDate, todayStr, weekdayOf, isClosedDay } from './dates.js';
 import Calendar from './Calendar.jsx';
 
@@ -9,7 +9,7 @@ function sectionsOf(draft) {
     { id: 'slots', label: '時段與公休' },
     { id: 'care-before', label: draft.care.before.tab || '蠟前遵守' },
     { id: 'care-after', label: draft.care.after.tab || '蠟後必看' },
-    ...draft.priceLists.map((l, i) => ({ id: 'price-' + i, label: `${l.label || i + 1}價目表` })),
+    ...draft.priceLists.map((l, i) => ({ id: 'price-' + i, label: `${shortListLabel(l.label) || i + 1}價目表` })),
     { id: 'products', label: '產品介紹' },
     { id: 'bundles', label: '產品組合' },
     { id: 'store', label: '店家資訊與頁底' },
@@ -311,7 +311,7 @@ function PriceListSection({ index, draft, update }) {
   return (
     <section>
       <div className="card">
-        <SectionHead title={`${list.label || ''}價目表`} desc="每個區塊會變成價目表上方的分類按鈕；價格可以直接打文字，例如 $1,200、依毛量報價、-" />
+        <SectionHead title={`${shortListLabel(list.label)}價目表`} desc="每個區塊會變成價目表上方的分類按鈕；價格可以直接打文字，例如 $1,200、依毛量報價、-" />
         <div className="grid-2">
           <Field label="切換按鈕名稱"><input value={list.label} placeholder="例如：女生" onChange={setField('label')} /></Field>
           <Field label="更新日期（選填）"><input value={list.updated || ''} placeholder="例如：2026.10.01 更新" onChange={setField('updated')} /></Field>

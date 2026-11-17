@@ -22,7 +22,20 @@ export function mergeSettings(remote) {
     if (val == null || kindOf(val) !== kindOf(def)) continue;
     merged[key] = kindOf(def) === 'object' ? { ...def, ...val } : val;
   }
+  // 舊存檔的熱蠟後英文小字「/ 時」「/ 天」「/ 週」已不使用
+  const after = merged.care && merged.care.after;
+  if (after && Array.isArray(after.blocks)) {
+    merged.care = {
+      ...merged.care,
+      after: { ...after, blocks: after.blocks.map((b) => (/^\/\s*\S$/.test(b.en || '') ? { ...b, en: '' } : b)) },
+    };
+  }
   return merged;
+}
+
+// 價目表切換按鈕顯示「女生」「男生」，不重複「價目表」三個字
+export function shortListLabel(label) {
+  return String(label || '').replace(/價目表$/, '') || label;
 }
 
 export async function loadSettings({ timeoutMs = 5000 } = {}) {
