@@ -387,3 +387,4 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .foot-line { margin: 0; color: var(--taupe); letter-spacing: .04em; }
 .foot-links { display: flex; gap: 16px; margin-top: 6px; }
 .foot-links a { color: var(--brown); }
+.products-note { text-align: center; color: var(--rose-deep); font-size: 14px; letter-spacing: .06em; margin: -10px 0 20px; }

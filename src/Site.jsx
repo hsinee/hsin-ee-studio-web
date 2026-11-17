@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useSettings, shortListLabel } from './settings.js';
+import { DEFAULT_SETTINGS } from './config.js';
 import { fmtDate, todayStr, addDays, isClosedDay, fullSlotsOf, lastOpenDate } from './dates.js';
 import Calendar from './Calendar.jsx';
 
@@ -278,6 +279,8 @@ function Products({ sub, setSub }) {
   const { products } = useSettings();
   const which = sub === 'bundles' ? 'bundles' : 'intro';
   const part = products[which];
+  // 舊存檔沒有提示欄位時用預設文字；後台清空則不顯示
+  const note = part.note ?? DEFAULT_SETTINGS.products[which].note;
   return (
     <article className="products">
       <SubTabs
@@ -291,6 +294,7 @@ function Products({ sub, setSub }) {
       <section className="step-in" key={which}>
         <h1 className="page-title serif">{part.title}</h1>
         {part.en && <p className="page-en">{part.en}</p>}
+        {note && <p className="products-note">{note}</p>}
         {which === 'intro' ? <ProductList part={part} /> : <BundleList part={part} />}
       </section>
     </article>

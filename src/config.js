@@ -235,6 +235,8 @@ const PRODUCTS = {
     tab: '產品介紹',
     title: '產品介紹',
     en: 'PRODUCTS INTRODUCTION',
+    // 標題下方的粉色提示（留空則不顯示）
+    note: '熱蠟當日加購產品，享 9 折優惠',
     priceLabel: '專屬價',
     items: [
       { name: '葡萄籽去角質', size: '60g', price: '$1,280', image: '/products/grape-scrub.webp', points: ['天然葡萄籽製造', '代謝老廢角質', '預防內包毛產生'] },
@@ -249,6 +251,7 @@ const PRODUCTS = {
     tab: '產品組合',
     title: '產品組合',
     en: 'RECOMMENDED ROUTINE',
+    note: '組合價已為優惠價，恕不再適用其他折扣',
     items: [
       {
         title: '小資族必備 **2** 寶',
