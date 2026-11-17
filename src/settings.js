@@ -7,17 +7,21 @@ export function useSettings() {
   return useContext(SettingsContext);
 }
 
-// 後台存的設定若少了某些欄位（例如之後新增的功能），用預設值補上
+function kindOf(v) {
+  return Array.isArray(v) ? 'array' : typeof v;
+}
+
+// 後台存的設定若少了某些欄位（例如之後新增的功能），用預設值補上；
+// 型別不同的舊欄位（例如舊版的預約須知）直接改用預設值
 export function mergeSettings(remote) {
   if (!remote || typeof remote !== 'object') return DEFAULT_SETTINGS;
   const merged = { ...DEFAULT_SETTINGS };
   for (const key of Object.keys(DEFAULT_SETTINGS)) {
     const def = DEFAULT_SETTINGS[key];
     const val = remote[key];
-    if (val == null) continue;
-    merged[key] = Array.isArray(def) ? val : typeof def === 'object' ? { ...def, ...val } : val;
+    if (val == null || kindOf(val) !== kindOf(def)) continue;
+    merged[key] = kindOf(def) === 'object' ? { ...def, ...val } : val;
   }
-  merged.pricing = { ...merged.pricing, labels: { ...DEFAULT_SETTINGS.pricing.labels, ...(merged.pricing.labels || {}) } };
   return merged;
 }
 
