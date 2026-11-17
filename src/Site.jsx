@@ -109,34 +109,23 @@ export default function Site() {
       </main>
 
       <section className="site-about">
-        <div className="glass">
-          <h2 className="about-title serif">ABOUT {store.name}</h2>
-          {store.intro.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-          {store.signature && <p className="about-sign">{store.signature}</p>}
-          {(store.hours || store.address) && (
-            <dl className="about-meta">
-              {store.hours && (
-                <div>
-                  <dt>營業時間</dt>
-                  <dd>{store.hours}</dd>
-                </div>
-              )}
-              {store.address && (
-                <div>
-                  <dt>地點</dt>
-                  <dd>{store.address}</dd>
-                </div>
-              )}
-            </dl>
-          )}
-        </div>
+        <h2 className="about-title serif">ABOUT {store.name}</h2>
+        {store.intro.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+        {store.signature && <p className="about-sign">{store.signature}</p>}
       </section>
 
+      {/* 頁底：預約制、營業時間、地址、IG、LINE 集中在同一區 */}
       <footer className="site-foot">
-        {store.footerBadge && <span className="foot-badge">{store.footerBadge}</span>}
-        {store.footerText && <span className="foot-en">{store.footerText}</span>}
+        {(store.footerBadge || store.footerText) && (
+          <div className="foot-row">
+            {store.footerBadge && <span className="foot-badge">{store.footerBadge}</span>}
+            {store.footerText && <span className="foot-en">{store.footerText}</span>}
+          </div>
+        )}
+        {store.hours && <p className="foot-line">{store.hours}</p>}
+        {store.address && <p className="foot-line">{store.address}</p>}
         <div className="foot-links">
           {store.instagram && (
             <a href={igUrl(store.instagram)} target="_blank" rel="noreferrer">IG {store.instagram}</a>
