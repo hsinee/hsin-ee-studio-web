@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { useSettings } from './settings.js';
+import { useSettings, shortListLabel } from './settings.js';
 import { fmtDate, todayStr, addDays, isClosedDay, fullSlotsOf, lastOpenDate } from './dates.js';
 import Calendar from './Calendar.jsx';
 
@@ -172,7 +172,7 @@ function Prices({ sub, setSub }) {
 
   return (
     <article className="pl">
-      <SubTabs options={priceLists.map((l) => ({ id: l.id, label: l.label }))} value={list.id} onChange={pickList} />
+      <SubTabs options={priceLists.map((l) => ({ id: l.id, label: shortListLabel(l.label) }))} value={list.id} onChange={pickList} />
       {list.updated && <p className="pl-updated">{list.updated}</p>}
 
       <div className="cat-chips" role="tablist">
