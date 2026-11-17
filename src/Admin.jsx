@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { loadSettings, saveSettings, shortListLabel } from './settings.js';
 import { WEEKDAYS, fmtDate, todayStr, weekdayOf, isClosedDay } from './dates.js';
+import { DEFAULT_SETTINGS } from './config.js';
 import Calendar from './Calendar.jsx';
 
 function sectionsOf(draft) {
@@ -516,6 +517,9 @@ function PartHeader({ part, draft, update, title }) {
         <Field label="英文標題（選填）"><input value={data.en || ''} onChange={set('en')} /></Field>
         {part === 'intro' && <Field label="價格前的文字"><input value={data.priceLabel || ''} placeholder="例如：專屬價" onChange={set('priceLabel')} /></Field>}
       </div>
+      <Field label="粉色提示（選填）" hint="顯示在標題下方，清空就不顯示">
+        <input value={data.note ?? DEFAULT_SETTINGS.products[part].note} onChange={set('note')} />
+      </Field>
     </div>
   );
 }
