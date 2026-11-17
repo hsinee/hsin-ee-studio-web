@@ -44,3 +44,10 @@ export function isClosedDay(str, settings) {
   const full = fullSlotsOf(str, settings);
   return timeSlots.length > 0 && timeSlots.every((t) => full.includes(t));
 }
+
+// 目前開放到哪一天：每月 openDay 號起開放到下個月底，之前只到本月底（0 = 一律開放到下個月底）
+export function lastOpenDate(openDay) {
+  const now = new Date();
+  const months = !openDay || now.getDate() >= openDay ? 2 : 1;
+  return toDateStr(new Date(now.getFullYear(), now.getMonth() + months, 0));
+}

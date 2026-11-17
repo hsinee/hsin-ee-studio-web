@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Booking from './Booking.jsx';
+import Site from './Site.jsx';
 import Admin from './Admin.jsx';
 import { SettingsContext, loadSettings } from './settings.js';
 
@@ -8,7 +8,7 @@ export default function App() {
   return isAdmin ? <Admin /> : <PublicSite />;
 }
 
-// 客人看到的預約頁：先讀取後台設定，讀不到就用預設內容
+// 客人看到的頁面：先讀取後台設定，讀不到就用預設內容
 function PublicSite() {
   const [settings, setSettings] = useState(null);
 
@@ -25,7 +25,7 @@ function PublicSite() {
   }
   return (
     <SettingsContext.Provider value={settings}>
-      <Booking />
+      <Site />
     </SettingsContext.Provider>
   );
 }
